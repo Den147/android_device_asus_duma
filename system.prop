@@ -15,6 +15,7 @@ persist.audio.fluence.voicecall=true
 persist.audio.fluence.voicerec=false
 persist.audio.fluence.speaker=true
 qcom.hw.aac.encoder=true
+ro.config.media_vol_steps=25
 
 # Audio
 mm.enable.smoothstreaming=true
