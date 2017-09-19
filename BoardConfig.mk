@@ -40,7 +40,7 @@ BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma user
 BOARD_KERNEL_CMDLINE += vmalloc=340M  androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/duma
-TARGET_KERNEL_CONFIG := lineage_duma_defconfig
+TARGET_KERNEL_CONFIG := elementalx_defconfig
 
 BOARD_USES_ALSA_AUDIO:= true
 BOARD_USES_LEGACY_ALSA_AUDIO:= false
