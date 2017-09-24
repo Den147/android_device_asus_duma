@@ -35,6 +35,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # A list of dpis to select prebuilt apk, in precedence order.
 PRODUCT_AAPT_PREBUILT_DPI := hdpi
 
+# Disable EGL buffer_age extension support
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.hwui.use_buffer_age=false
+
+# A list of dpis to select prebuilt apk, in precedence order.
+PRODUCT_AAPT_PREBUILT_DPI := hdpi
+
 # Boot animation
 TARGET_SCREEN_HEIGHT := 1200
 TARGET_SCREEN_WIDTH := 1920
@@ -48,6 +55,8 @@ PRODUCT_PACKAGES := \
 
 # Audio
 PRODUCT_PACKAGES += \
+    android.hardware.audio@2.0-impl \
+    android.hardware.audio.effect@2.0-impl \
     audio.primary.msm8960 \
     audio.a2dp.default \
     audio.usb.default \
@@ -72,6 +81,19 @@ PRODUCT_PACKAGES += \
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb \
     ro.adb.secure=0
+
+# Bluetooth HAL
+PRODUCT_PACKAGES += \
+    android.hardware.bluetooth@1.0-impl \
+    libbt-vendor 
+
+PRODUCT_PROPERTY_OVERRIDES += \
+	ro.qualcomm.bt.hci_transport=smd
+	qcom.bluetooth.soc=smd
+
+# USB HAL
+PRODUCT_PACKAGES += \
+    android.hardware.usb@1.0-service
  
 # Configure ro.recents.grid
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -85,29 +107,55 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    Camera2 \
+    Snap \
     camera.duma
 
 PRODUCT_PACKAGES += \
+    android.hardware.camera.provider@2.4-impl \
+    camera.device@3.2-impl \
+
+PRODUCT_PACKAGES += \
     hostapd_default.conf
+
+# Features
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml
+
+# Disable camera Treble path
+PRODUCT_PROPERTY_OVERRIDES += \
+    camera.disable_treble=true
 
 # Charger
 PRODUCT_PACKAGES += \
     charger_res_images \
     charger_touch
 
+# DRM
+PRODUCT_PACKAGES += \
+    android.hardware.drm@1.0-impl
+
 # Graphics
 PRODUCT_PACKAGES += \
+    android.hardware.graphics.allocator@2.0-impl \
+    android.hardware.graphics.composer@2.1-impl \
+    android.hardware.graphics.mapper@2.0-impl \
+    android.hardware.memtrack@1.0-impl \
     libgenlock \
     hwcomposer.msm8960 \
     gralloc.msm8960 \
     copybit.msm8960 \
     memtrack.msm8960
 
+# GNSS HAL
+PRODUCT_PACKAGES += \
+    android.hardware.gnss@1.0-impl
+
 # GPS
 PRODUCT_PACKAGES += \
-    gps.conf \
     gps.msm8960
+
+PRODUCT_COPY_FILES += \
+    device/asus/duma/configs/gps.conf:system/etc/gps.conf
 
 # IPC router config
 PRODUCT_COPY_FILES += \
@@ -126,7 +174,11 @@ PRODUCT_COPY_FILES += \
 
 # Keystore
 #PRODUCT_PACKAGES += \
-    keystore.msm8960
+#    keystore.msm8960
+
+# Keymaster
+PRODUCT_PACKAGES += \
+    android.hardware.keymaster@3.0-impl
 
 # Kickstart
 PRODUCT_COPY_FILES += \
@@ -134,7 +186,9 @@ PRODUCT_COPY_FILES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-    lights.msm8960
+    android.hardware.light@2.0-impl \
+    lights.msm8960 
+ 
 
 # Media
 PRODUCT_COPY_FILES += \
@@ -175,7 +229,9 @@ PRODUCT_COPY_FILES += \
 
 # Power
 PRODUCT_PACKAGES += \
-    power.duma
+    android.hardware.power@1.0-impl \
+    power.duma 
+ 
 
 # Ramdisk
 PRODUCT_PACKAGES += \
@@ -195,6 +251,18 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
 
+# Sensors
+PRODUCT_PACKAGES += \
+    android.hardware.sensors@1.0-impl \
+    sensors.msm8960
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/sensors/_hals.conf:system/vendor/etc/sensors/_hals.conf
+
+# Default OMX service to non-Treble
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.media.treble_omx=false
+
 # Touchscreen calibration
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/touch_dev.idc:system/usr/idc/touch_dev.idc \
@@ -202,8 +270,10 @@ PRODUCT_COPY_FILES += \
 
 # Wifi
 PRODUCT_PACKAGES += \
+    android.hardware.wifi@1.0-service \
     conn_init \
     dhcpcd.conf \
+    wificond \
     hostapd \
     libwfcu \
     p2p_supplicant_overlay.conf \
@@ -221,3 +291,4 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libqcomvoiceprocessing \
     libqcomvoiceprocessingdescriptors
+

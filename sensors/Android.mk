@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017 The LineageOS Project
+# Copyright (C) 2013 The Android Open-Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,29 @@
 # limitations under the License.
 #
 
-# Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
+LOCAL_PATH := $(call my-dir)
 
-# Inherit from duma device configuration
-$(call inherit-product, device/asus/duma/device.mk)
+include $(CLEAR_VARS)
 
-# Device identifier. This must come after all inclusions
-TARGET_VENDOR := Asus
-PRODUCT_DEVICE := duma
-PRODUCT_NAME := full_duma
-PRODUCT_BRAND := Asus
-PRODUCT_MODEL := MeMOPad10 FHD
-PRODUCT_MANUFACTURER := Asus
+LOCAL_MODULE := sensors.$(TARGET_BOARD_PLATFORM)
+
+LOCAL_MODULE_RELATIVE_PATH := hw
+LOCAL_PROPRIETARY_MODULE := true
+
+LOCAL_CFLAGS := -DLOG_TAG=\"MultiHal\"
+
+LOCAL_SRC_FILES := \
+    multihal.cpp \
+    SensorEventQueue.cpp \
+
+LOCAL_SHARED_LIBRARIES := \
+    libcutils \
+    libdl \
+    liblog \
+    libutils \
+
+LOCAL_STRIP_MODULE := false
+
+include $(BUILD_SHARED_LIBRARY)
+
+include $(call all-makefiles-under, $(LOCAL_PATH))

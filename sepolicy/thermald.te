@@ -1,5 +1,5 @@
 # Temperature sensor daemon (root process)
-type thermald, domain, domain_deprecated;
+type thermald, domain, device_domain_deprecated;
 type thermald_exec, exec_type, file_type;
 
 # Started by init
@@ -10,6 +10,7 @@ allow thermald self:capability dac_override;
 auditallow thermald self:capability dac_override;
 
 allow thermald self:socket create_socket_perms;
+allowxperm thermald self:socket ioctl msm_sock_ipc_ioctls;
 
 # CPU hotplug uevent
 allow thermald self:netlink_kobject_uevent_socket { create setopt bind read };

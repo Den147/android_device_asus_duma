@@ -40,7 +40,10 @@ BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma user
 BOARD_KERNEL_CMDLINE += vmalloc=340M  androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/duma
-TARGET_KERNEL_CONFIG := elementalx_defconfig
+#TARGET_KERNEL_CONFIG := elementalx_defconfig
+TARGET_KERNEL_CONFIG := Glitch_duma_defconfig
+#KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
+#KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
 BOARD_USES_ALSA_AUDIO:= true
 BOARD_USES_LEGACY_ALSA_AUDIO:= false
@@ -57,6 +60,17 @@ TARGET_BOARD_PLATFORM := msm8960
 TARGET_BOARD_SUFFIX := _32
 
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth
+
+# Media HAL
+BOARD_GLOBAL_CFLAGS += -DQCOM_BSP_LEGACY
+BOARD_GLOBAL_CPPFLAGS += -DQCOM_BSP_LEGACY
+NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
+
+# Graphics
+SF_START_GRAPHICS_ALLOCATOR_SERVICE := true
+
+# Vendor Interface Manifest
+DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
 
 # FIXME: HOSTAPD-derived wifi driver
 BOARD_HAS_QCOM_WLAN := true
@@ -128,10 +142,6 @@ HAVE_ADRENO_SOURCE:= false
 # SELinux
 BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy
 #include device/qcom/sepolicy/sepolicy.mk
-
-# Media HAL
-BOARD_GLOBAL_CFLAGS += -DQCOM_BSP_LEGACY
-BOARD_GLOBAL_CPPFLAGS += -DQCOM_BSP_LEGACY
 
 # Enable Minikin text layout engine (will be the default soon)
 USE_MINIKIN := true
