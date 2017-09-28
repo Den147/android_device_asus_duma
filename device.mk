@@ -149,7 +149,15 @@ PRODUCT_PACKAGES += \
 # GNSS HAL
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl
+    
+# RenderScript HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.renderscript@1.0-impl
 
+# RIL HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.radio@1.0-impl
+    
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8960
@@ -160,7 +168,7 @@ PRODUCT_COPY_FILES += \
 # IPC router config
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/sec_config:system/etc/sec_config
-
+        
 # Keylayouts
 PRODUCT_COPY_FILES += \
     device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kl:system/usr/keylayout/apq8064-tabla-snd-card_Button_Jack.kl \
