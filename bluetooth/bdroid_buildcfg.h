@@ -19,10 +19,7 @@
 
 #define BTM_DEF_LOCAL_NAME   "MeMo Pad10 FHD LTE"
 
-/* Defined if the kernel does not have support for CLOCK_BOOTTIME_ALARM 
-#define KERNEL_MISSING_CLOCK_BOOTTIME_ALARM TRUE
-
-#define SC_MODE_INCLUDED FALSE */
+#define SC_MODE_INCLUDED FALSE 
 
 // Networking, Capturing, Object Transfer
 // MAJOR CLASS: COMPUTER
