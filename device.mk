@@ -87,10 +87,6 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0-impl \
     libbt-vendor 
 
-PRODUCT_PROPERTY_OVERRIDES += \
-	ro.qualcomm.bt.hci_transport=smd
-	qcom.bluetooth.soc=smd
-
 # USB HAL
 PRODUCT_PACKAGES += \
     android.hardware.usb@1.0-service
