@@ -42,8 +42,8 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/duma
 #TARGET_KERNEL_CONFIG := elementalx_defconfig
 TARGET_KERNEL_CONFIG := Glitch_duma_defconfig
-KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
-KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
+#KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
+#KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
 BOARD_USES_ALSA_AUDIO:= true
 BOARD_USES_LEGACY_ALSA_AUDIO:= false
