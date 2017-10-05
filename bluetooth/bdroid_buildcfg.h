@@ -19,6 +19,7 @@
 
 #define BTM_DEF_LOCAL_NAME   "MeMo Pad10 FHD LTE"
 
+
 #define SC_MODE_INCLUDED FALSE 
 
 // Networking, Capturing, Object Transfer

@@ -64,7 +64,7 @@ PRODUCT_PACKAGES += \
     libaudio-resampler
 
 PRODUCT_COPY_FILES += \
-    device/asus/duma/audio/audio_effects.conf:system/vendor/etc/audio_effects.conf \
+    device/asus/duma/audio/audio_effects_vendor.conf:system/etc/audio_effects_vendor.conf \
     device/asus/duma/audio/audio_policy.conf:system/etc/audio_policy.conf \
     device/asus/duma/audio/mixer_paths.xml:system/etc/mixer_paths.xml
 
@@ -84,8 +84,13 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 
 # Bluetooth HAL
 PRODUCT_PACKAGES += \
-    android.hardware.bluetooth@1.0-impl \
-    libbt-vendor 
+    libbt-vendor \
+    android.hardware.bluetooth@1.0-impl  
+
+
+# Thermal HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.thermal@1.0-impl
 
 # USB HAL
 PRODUCT_PACKAGES += \
@@ -95,20 +100,26 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.recents.grid=false
 
+# Configstore HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.configstore@1.0-service
+
+
 # Preset for Russia
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.timezone=Europe/Moscow \
     persist.sys.language=ru \
     persist.sys.country=RU
 
-# Camera
-PRODUCT_PACKAGES += \
-    Snap \
-    camera.duma
-
+# Camera HILD
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
     camera.device@3.2-impl \
+
+# Camera
+PRODUCT_PACKAGES += \
+    Camera2 \
+    camera.duma 
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
@@ -145,7 +156,7 @@ PRODUCT_PACKAGES += \
 # GNSS HAL
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl
-    
+
 # RenderScript HIDL interfaces
 PRODUCT_PACKAGES += \
     android.hardware.renderscript@1.0-impl
@@ -153,7 +164,8 @@ PRODUCT_PACKAGES += \
 # RIL HIDL interfaces
 PRODUCT_PACKAGES += \
     android.hardware.radio@1.0-impl
-    
+
+
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8960
@@ -164,7 +176,7 @@ PRODUCT_COPY_FILES += \
 # IPC router config
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/sec_config:system/etc/sec_config
-        
+
 # Keylayouts
 PRODUCT_COPY_FILES += \
     device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kl:system/usr/keylayout/apq8064-tabla-snd-card_Button_Jack.kl \
@@ -192,8 +204,11 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
     lights.msm8960 
- 
 
+# HIDL
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/manifest.xml:system/vendor/manifest.xml
+ 
 # Media
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/media_profiles.xml:system/etc/media_profiles.xml \
@@ -261,7 +276,7 @@ PRODUCT_PACKAGES += \
     sensors.msm8960
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/sensors/_hals.conf:system/vendor/etc/sensors/_hals.conf
+    $(LOCAL_PATH)/configs/sensors/_hals.conf:system/vendor/etc/sensors/_hals.conf
 
 # Default OMX service to non-Treble
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -290,6 +305,17 @@ PRODUCT_COPY_FILES += \
     device/asus/duma/wifi/WCNSS_cfg.dat:system/vendor/firmware/wlan/prima/WCNSS_cfg.dat \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:system/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:system/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin
+
+# FM
+PRODUCT_PACKAGES += \
+    FMRadio \
+    libqcomfm_jni \
+    qcom.fmradio \
+    qcom.fmradio.xml
+
+# FM HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.broadcastradio@1.0-impl
 
 # Voice processing
 PRODUCT_PACKAGES += \

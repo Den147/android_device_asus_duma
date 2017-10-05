@@ -51,6 +51,11 @@ on boot
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
 
+    # Camera Recording
+    mkdir /dev/video
+    symlink /dev/video32 /dev/video/venus_dec
+    symlink /dev/video33 /dev/video/venus_enc
+
     # Allow QMUX daemon to assign port open wait time
     chown radio radio /sys/devices/virtual/hsicctl/hsicctl0/modem_wait
 
@@ -213,11 +218,6 @@ on post-fs-data
     # adjust vibrator amplitude
     write /sys/class/timed_output/vibrator/amp 70
 
-on property:init.svc.wpa_supplicant=stopped
-    stop dhcpcd
-    
-    setprop vold.post_fs_data_done 1
-
 service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class main
     user root
@@ -296,46 +296,6 @@ service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     disabled
     oneshot
 
-service dhcpcd_wlan0 /system/bin/dhcpcd -aABDKL
-    class main
-    disabled
-    oneshot
-
-service dhcpcd_eth0 /system/bin/dhcpcd -aABDKL
-    class main
-    disabled
-    oneshot
-
-service dhcpcd_p2p /system/bin/dhcpcd -aABKL
-    class main
-    disabled
-    oneshot
-
-service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
-    class main
-    disabled
-    oneshot
-
-service iprenew_wlan0 /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
-service iprenew_eth0 /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
-service iprenew_p2p /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
-service iprenew_bt-pan /system/bin/dhcpcd -n
-    class main
-    disabled
-    oneshot
-
 on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
     write /proc/sys/net/ipv4/tcp_adv_win_scale  1
@@ -349,7 +309,7 @@ service thermald /system/bin/thermald
     class main
     group radio system
 
-service mpdecision /system/bin/mpdecision --avg_comp
+service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     class main
     user root
     group root readproc system

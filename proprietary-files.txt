@@ -51,7 +51,7 @@ etc/firmware/vidcfw.elf
 etc/firmware/vidc.mdt
 
 lib/hw/flp.msm8960.so
-lib/hw/sensors.msm8960.so
+lib/hw/sensors.msm8960.so:lib/sensors.duma.so
 lib/libacdbdata.so
 lib/libacdbloader.so
 lib/libAKM.so
