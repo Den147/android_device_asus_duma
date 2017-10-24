@@ -324,7 +324,7 @@ PRODUCT_PACKAGES += \
     qcom.fmradio.xml \
 
 PRODUCT_PACKAGES += \
-    android.hardware.broadcastradio@1.0
+    android.hardware.broadcastradio@1.0-impl
 
 # Voice processing
 PRODUCT_PACKAGES += \
