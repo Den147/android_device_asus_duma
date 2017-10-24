@@ -160,6 +160,7 @@ EXTENDED_FONT_FOOTPRINT := true
 
 # CM Hardware
 BOARD_HARDWARE_CLASS += \
+    device/asus/duma/cmhw \
     hardware/cyanogen/cmhw
 
 # Recovery
