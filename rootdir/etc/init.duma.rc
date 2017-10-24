@@ -51,6 +51,9 @@ on boot
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
 
+    # Create NETMGR daemon socket area
+    mkdir /dev/socket/netmgr 0750 radio radio
+
     # Camera Recording
     mkdir /dev/video
     symlink /dev/video32 /dev/video/venus_dec
@@ -339,6 +342,14 @@ service qseecomd /system/bin/qseecomd
 service diag_mdlog /system/bin/diag_mdlog -s 100
     class late_start
     disabled
+
+service ril-daemon /vendor/bin/hw/rild
+    class main
+    socket rild stream 660 root radio
+    socket sap_uim_socket1 stream 660 bluetooth bluetooth
+    socket rild-debug stream 660 radio system
+    user root
+    group radio cache inet misc audio log readproc wakelock qcom_diag net_raw
 
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
