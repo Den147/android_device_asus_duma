@@ -341,6 +341,16 @@
          that can be set by the user. -->
     <integer name="config_screenBrightnessDoze">17</integer>
 
+    <bool name="config_supportDoubleTapWake">true</bool>
+
+    <!-- The list absolute paths of jar/apk files containing the device specific handlers,
+         delimited by File.pathSeparator, which defaults to ":" on Android 
+    <string name="config_deviceKeyHandlerLib" translatable="false">/system/framework/com.lineageos.keyhandler.jar</string>
+
+     Full qualified name of the class that implements
+         com.android.internal.os.DeviceKeyHandler interface. 
+    <string name="config_deviceKeyHandlerClass" translatable="false">com.lineageos.settings.device.KeyHandler</string>-->
+
     <!-- Enable overlay for all location components. -->
     <string name="config_networkLocationProviderPackageName" translatable="false">com.android.google.gms</string>
     <string name="config_fusedLocationProviderPackageName" translatable="false">com.qualcomm.location</string>
