@@ -33,7 +33,7 @@ TARGET_CPU_VARIANT := krait
 
 # Snapdragon LLVM
 TARGET_USE_SDCLANG := true
-
+BOARD_KERNEL_IMAGE_NAME := zImage
 BOARD_KERNEL_BASE := 0x80200000
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3
@@ -41,9 +41,7 @@ BOARD_KERNEL_CMDLINE += vmalloc=340M  androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/duma
 #TARGET_KERNEL_CONFIG := elementalx_defconfig
-TARGET_KERNEL_CONFIG := Glitch_duma_defconfig
-#KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
-#KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
+TARGET_KERNEL_CONFIG := duma_defconfig
 
 BOARD_USES_ALSA_AUDIO:= true
 BOARD_USES_LEGACY_ALSA_AUDIO:= false
