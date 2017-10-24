@@ -53,6 +53,9 @@ PRODUCT_PACKAGES := \
     CarrierConfig \
     BasicSmsReceiver
 
+PRODUCT_PROPERTY_OVERRIDES += \
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
+
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
@@ -107,9 +110,9 @@ PRODUCT_PACKAGES += \
 
 # Preset for Russia
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.sys.timezone=Europe/Moscow \
-    persist.sys.language=ru \
-    persist.sys.country=RU
+    persist.sys.timezone=Europe/Rome \
+    persist.sys.language=it \
+    persist.sys.country=IT
 
 # Camera HILD
 PRODUCT_PACKAGES += \
@@ -163,7 +166,8 @@ PRODUCT_PACKAGES += \
 
 # RIL HIDL interfaces
 PRODUCT_PACKAGES += \
-    android.hardware.radio@1.0-impl
+    android.hardware.radio@1.0-impl \
+    android.hardware.radio.deprecated@1.0-impl
 
 
 # GPS
@@ -270,6 +274,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
 
+PRODUCT_PACKAGES += \
+    android.hardware.thermal@1.0-impl
+
+#PRODUCT_PACKAGES += \
+#    android.hardware.health@1.0-impl
+
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
@@ -306,16 +316,15 @@ PRODUCT_COPY_FILES += \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:system/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:system/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin
 
-# FM
+#FM Radio
 PRODUCT_PACKAGES += \
-    FMRadio \
+    #FMRadio \
     libqcomfm_jni \
     qcom.fmradio \
-    qcom.fmradio.xml
+    qcom.fmradio.xml \
 
-# FM HIDL interfaces
 PRODUCT_PACKAGES += \
-    android.hardware.broadcastradio@1.0-impl
+    android.hardware.broadcastradio@1.0
 
 # Voice processing
 PRODUCT_PACKAGES += \
