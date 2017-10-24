@@ -16,6 +16,7 @@
 
 ifneq ($(filter duma,$(TARGET_DEVICE)),)
 
+
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
