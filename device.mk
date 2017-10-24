@@ -52,6 +52,30 @@ PRODUCT_PACKAGES := \
     rild \
     CarrierConfig \
     BasicSmsReceiver
+	
+# Catlog
+PRODUCT_PACKAGES += \
+    CatLog
+
+# Some Asus apps
+PRODUCT_PACKAGES += \
+    FileManager \
+    ZenUI \
+    Browser \
+    PixelMaster
+
+# Keyhandler
+#PRODUCT_PACKAGES += \
+#    Gestures
+#    com.lineageos.keyhandler \
+
+
+#PRODUCT_SYSTEM_SERVER_JARS += \
+#    com.lineageos.keyhandler
+
+# OmniParts
+#PRODUCT_PACKAGES += \
+#    OmniParts
 
 PRODUCT_PROPERTY_OVERRIDES += \
     rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
