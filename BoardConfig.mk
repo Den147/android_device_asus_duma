@@ -175,5 +175,8 @@ TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)/releasetools
 # Properties
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 
+# This is needed to fix Healthd Hidl build
+WITH_LINEAGE_CHARGER := false
+
 # Inherit from the proprietary version
 -include vendor/asus/duma/BoardConfigVendor.mk

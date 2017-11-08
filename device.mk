@@ -303,8 +303,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl
 
-#PRODUCT_PACKAGES += \
-#    android.hardware.health@1.0-impl
+PRODUCT_PACKAGES += \
+    android.hardware.health@1.0-impl
 
 # Sensors
 PRODUCT_PACKAGES += \
