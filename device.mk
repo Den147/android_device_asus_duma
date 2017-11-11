@@ -146,7 +146,7 @@ PRODUCT_PACKAGES += \
 # Camera
 PRODUCT_PACKAGES += \
     Camera2 \
-    camera.duma 
+    camera.msm8960 
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
