@@ -159,10 +159,6 @@ USE_MINIKIN := true
 # Include an expanded selection of fonts
 EXTENDED_FONT_FOOTPRINT := true
 
-# CM Hardware
-BOARD_HARDWARE_CLASS += \
-    device/asus/duma/cmhw \
-    hardware/cyanogen/cmhw
 
 # Recovery
 TARGET_RECOVERY_DENSITY := hdpi
