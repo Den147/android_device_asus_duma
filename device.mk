@@ -104,8 +104,10 @@ PRODUCT_COPY_FILES += \
 # Bluetooth
 PRODUCT_PACKAGES += \
     bdAddrLoader \
-    hci_qcomm_init \
-    init.duma.bt.sh
+    hci_qcomm_init
+
+PRODUCT_COPY_FILES += \
+    device/asus/duma/rootdir/etc/init.duma.bt.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.duma.bt.sh
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp,adb \
@@ -148,8 +150,8 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    Camera2 \
-    camera.duma 
+    Snap \
+    camera.msm8960 
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
@@ -339,20 +341,26 @@ PRODUCT_PACKAGES += \
     p2p_supplicant_overlay.conf \
     wpa_supplicant \
     wpa_supplicant.conf \
-    wpa_supplicant_overlay.conf \
-    init.duma.wifi.sh
+    wpa_supplicant_overlay.conf
 
 PRODUCT_COPY_FILES += \
+    device/asus/duma/rootdir/etc/init.duma.wifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.duma.wifi.sh \
     device/asus/duma/wifi/WCNSS_cfg.dat:system/vendor/firmware/wlan/prima/WCNSS_cfg.dat \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:system/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:system/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin
 
+#WiFi Display
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.debug.wfd.enable=1 \
+    persist.sys.wfd.virtual=0 \
+    wlan.wfd.hdcp=disable
+
 #FM Radio
-PRODUCT_PACKAGES += \
-    #FMRadio \
-    libqcomfm_jni \
-    qcom.fmradio \
-    qcom.fmradio.xml \
+#PRODUCT_PACKAGES += \
+#    #FMRadio \
+#    libqcomfm_jni \
+#    qcom.fmradio \
+#    qcom.fmradio.xml \
 
 PRODUCT_PACKAGES += \
     android.hardware.broadcastradio@1.0-impl
