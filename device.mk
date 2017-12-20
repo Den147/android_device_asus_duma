@@ -305,7 +305,7 @@ PRODUCT_PACKAGES += \
 
 # Thermal
 PRODUCT_COPY_FILES += \
-    device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
+    device/asus/duma/configs/thermald-duma.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermald.conf
 
 PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl
