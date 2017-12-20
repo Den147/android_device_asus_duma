@@ -93,8 +93,8 @@ PRODUCT_PACKAGES += \
     libaudio-resampler
 
 PRODUCT_COPY_FILES += \
-    device/asus/duma/audio/audio_effects_vendor.conf:system/etc/audio_effects_vendor.conf \
-    device/asus/duma/audio/audio_policy.conf:system/etc/audio_policy.conf \
+    device/asus/duma/audio/audio_effects_vendor.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio_effects_vendor.conf \
+    device/asus/duma/audio/audio_policy.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy.conf \
     device/asus/duma/audio/mixer_paths.xml:system/etc/mixer_paths.xml
 
 # Get the long list of APNs
@@ -211,18 +211,18 @@ PRODUCT_COPY_FILES += \
 
 # IPC router config
 PRODUCT_COPY_FILES += \
-    device/asus/duma/configs/sec_config:system/etc/sec_config
+    device/asus/duma/configs/sec_config:$(TARGET_COPY_OUT_VENDOR)/etc/sec_config
 
 # Keylayouts
 PRODUCT_COPY_FILES += \
-    device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kl:system/usr/keylayout/apq8064-tabla-snd-card_Button_Jack.kl \
-    device/asus/duma/keylayout/hs_detect.kl:system/usr/keylayout/hs_detect.kl \
-    device/asus/duma/keylayout/pmic8xxx_pwrkey.kl:system/usr/keylayout/pmic8xxx_pwrkey.kl \
-    device/asus/duma/keylayout/keypad_8064.kl:system/usr/keylayout/keypad_8064.kl \
-    device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kcm:system/usr/keychars/apq8064-tabla-snd-card_Button_Jack.kcm \
-    device/asus/duma/keylayout/hs_detect.kcm:system/usr/keychars/hs_detect.kcm \
-    device/asus/duma/keylayout/keypad_8064.kcm:system/usr/keychars/keypad_8064.kcm \
-    device/asus/duma/keylayout/pmic8xxx_pwrkey.kcm:system/usr/keychars/pmic8xxx_pwrkey.kcm
+    device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/apq8064-tabla-snd-card_Button_Jack.kl \
+    device/asus/duma/keylayout/hs_detect.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/hs_detect.kl \
+    device/asus/duma/keylayout/pmic8xxx_pwrkey.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/pmic8xxx_pwrkey.kl \
+    device/asus/duma/keylayout/keypad_8064.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/keypad_8064.kl \
+    device/asus/duma/keylayout/apq8064-tabla-snd-card_Button_Jack.kcm:$(TARGET_COPY_OUT_VENDOR)/usr/keychars/apq8064-tabla-snd-card_Button_Jack.kcm \
+    device/asus/duma/keylayout/hs_detect.kcm:$(TARGET_COPY_OUT_VENDOR)/usr/keychars/hs_detect.kcm \
+    device/asus/duma/keylayout/keypad_8064.kcm:$(TARGET_COPY_OUT_VENDOR)/usr/keychars/keypad_8064.kcm \
+    device/asus/duma/keylayout/pmic8xxx_pwrkey.kcm:$(TARGET_COPY_OUT_VENDOR)/usr/keychars/pmic8xxx_pwrkey.kcm
 
 # Keystore
 #PRODUCT_PACKAGES += \
@@ -247,11 +247,11 @@ PRODUCT_COPY_FILES += \
  
 # Media
 PRODUCT_COPY_FILES += \
-    device/asus/duma/configs/media_profiles.xml:system/etc/media_profiles.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
-    device/asus/duma/configs/media_codecs.xml:system/etc/media_codecs.xml \
-    device/asus/duma/configs/media_codecs_performance.xml:system/etc/media_codecs_performance.xml
+    device/asus/duma/configs/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_video.xml \
+    device/asus/duma/configs/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
+    device/asus/duma/configs/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml
 
 # Misc
 PRODUCT_CHARACTERISTICS := tablet
