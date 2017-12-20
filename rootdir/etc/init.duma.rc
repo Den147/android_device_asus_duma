@@ -217,12 +217,12 @@ on post-fs-data
     # adjust vibrator amplitude
     write /sys/class/timed_output/vibrator/amp 70
 
-service irsc_util /system/bin/irsc_util "/vendor/etc/sec_config"
+service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class main
     user root
     oneshot
 
-service rmt_storage /system/bin/rmt_storage
+service rmt_storage /vendor/bin/rmt_storage
     class main
     user root
     group system
@@ -240,23 +240,23 @@ on property:bluetooth.hciattach=true
 on property:bluetooth.hciattach=false
     setprop bluetooth.status off
 
-service bridgemgrd /system/bin/bridgemgrd
+service bridgemgrd /vendor/bin/bridgemgrd
     class main
     user radio
     group radio
 
 # QMUX must be in multiple groups to support external process connections
-service qmuxd /system/bin/qmuxd
+service qmuxd /vendor/bin/qmuxd
     class main
     user radio
     group radio audio bluetooth gps 
 
-service ks_checker /system/bin/kickstart_checker.sh
+service ks_checker /vendor/bin/kickstart_checker.sh
     class core
     group system
     oneshot
 
-service kickstart /system/bin/qcks -i /firmware/image/ -r /data/tombstones/mdm/
+service kickstart /vendor/bin/qcks -i /firmware/image/ -r /data/tombstones/mdm/
     class core
     user system
     group system wakelock
@@ -273,11 +273,11 @@ on property:gsm.radio.kickstart=off
 on property:ril.asus_debugger_running=1
     start asus-dbug-d
 
-service netmgrd /system/bin/netmgrd
+service netmgrd /vendor/bin/netmgrd
     class main
     group radio
 
-service sensors /system/bin/sensors.qcom
+service sensors /vendor/bin/sensors.qcom
     class late_start
     user root
     group root
@@ -307,16 +307,16 @@ service charger /sbin/healthd -c
     critical
     seclabel u:r:healthd:s0
 
-service thermald /system/bin/thermald
+service thermald /vendor/bin/thermald
     class main
     group radio system
 
-service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
+service mpdecision /vendor/bin/mpdecision --no_sleep --avg_comp
     class main
     user root
     group root readproc system
 
-service qcamerasvr /system/bin/mm-qcamera-daemon
+service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input
@@ -333,12 +333,12 @@ service bdAddrLoader /vendor/bin/bdAddrLoader -f /persist/bluetooth/.bdaddr -h -
     group system bluetooth 
     oneshot
 
-service qseecomd /system/bin/qseecomd
+service qseecomd /vendor/bin/qseecomd
     class late_start
     user system
     group system
 
-service diag_mdlog /system/bin/diag_mdlog -s 100
+service diag_mdlog /vendor/bin/diag_mdlog -s 100
     class late_start
     disabled
 

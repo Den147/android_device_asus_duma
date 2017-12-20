@@ -234,7 +234,7 @@ PRODUCT_PACKAGES += \
 
 # Kickstart
 PRODUCT_COPY_FILES += \
-    device/asus/duma/kickstart_checker.sh:system/bin/kickstart_checker.sh
+    device/asus/duma/kickstart_checker.sh:$(TARGET_COPY_OUT_VENDOR)/bin/kickstart_checker.sh
 
 # Lights
 PRODUCT_PACKAGES += \
