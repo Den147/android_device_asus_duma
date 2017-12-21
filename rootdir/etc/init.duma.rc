@@ -311,7 +311,7 @@ service thermald /vendor/bin/thermald
     class main
     group radio system
 
-service mpdecision /vendor/bin/mpdecision --no_sleep --avg_comp
+service mpdecision /vendor/bin/mpdecision --avg_comp
     class main
     user root
     group root readproc system
