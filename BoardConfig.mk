@@ -173,5 +173,9 @@ TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 # This is needed to fix Healthd Hidl build
 WITH_LINEAGE_CHARGER := false
 
+# Device Manifest
+DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
+DEVICE_MATRIX_FILE := device/asus/duma/compatibility_matrix.xml
+
 # Inherit from the proprietary version
 -include vendor/asus/duma/BoardConfigVendor.mk

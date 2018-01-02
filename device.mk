@@ -249,9 +249,6 @@ PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
     lights.msm8960 
 
-# HIDL
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/manifest.xml:system/vendor/manifest.xml
  
 # Media
 PRODUCT_COPY_FILES += \
@@ -376,7 +373,4 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libqcomvoiceprocessing \
     libqcomvoiceprocessingdescriptors
-
-# Device manifest
-DEVICE_MATRIX_FILE := device/asus/flo/compatibility_matrix.xml
 
