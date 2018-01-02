@@ -225,7 +225,7 @@ service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
 service rmt_storage /vendor/bin/rmt_storage
     class main
     user root
-    group system
+    group system wakelock
 
 service hciattach /vendor/bin/init.duma.bt.sh
     class late_start
@@ -249,7 +249,7 @@ service bridgemgrd /vendor/bin/bridgemgrd
 service qmuxd /vendor/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps 
+    group radio audio bluetooth wakelock gps 
 
 service ks_checker /vendor/bin/kickstart_checker.sh
     class core
@@ -275,18 +275,18 @@ on property:ril.asus_debugger_running=1
 
 service netmgrd /vendor/bin/netmgrd
     class main
-    group radio
+    group radio wakelock
 
 service sensors /vendor/bin/sensors.qcom
     class late_start
     user root
-    group root
+    group root wakelock
 
 service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
     -I/vendor/etc/wifi/p2p_supplicant_overlay.conf -N \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
-#   -I/vendor/etc/wifi/wpa_supplicant_overlay.conf \
+    -I/vendor/etc/wifi/wpa_supplicant_overlay.conf \
     -puse_p2p_group_interface=1 \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     #   we will start as root and wpa_supplicant will switch to user wifi
