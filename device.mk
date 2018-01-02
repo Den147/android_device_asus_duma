@@ -372,3 +372,6 @@ PRODUCT_PACKAGES += \
     libqcomvoiceprocessing \
     libqcomvoiceprocessingdescriptors
 
+# Device manifest
+DEVICE_MATRIX_FILE := device/asus/flo/compatibility_matrix.xml
+
