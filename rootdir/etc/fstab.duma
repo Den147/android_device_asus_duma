@@ -27,3 +27,4 @@
 /dev/block/platform/msm_sdcc.1/by-name/abootb       /abootb         emmc    defaults                                                                                            defaults
 /devices/platform/msm_sdcc.3/mmc_host*              auto            auto    nosuid,nodev                                                                                        voldmanaged=sdcard1:auto,encryptable=userdata
 /devices/platform/msm_hsusb_host/usb*               auto            auto    nosuid,nodev                                                                                        voldmanaged=usb:auto,noemulatedsd
+/dev/block/zram0                                    none            swap    defaults                                                                     zramsize=533413200,max_comp_streams=4,notrim
