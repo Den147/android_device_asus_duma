@@ -123,6 +123,16 @@ BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
 #Reduce space taken by the journal
 BOARD_SYSTEMIMAGE_JOURNAL_SIZE := 0
 
+# Dexpreopt
+ifeq ($(HOST_OS),linux)
+  ifneq ($(TARGET_BUILD_VARIANT),eng)
+    ifeq ($(WITH_DEXPREOPT),)
+      WITH_DEXPREOPT := true
+      WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+    endif
+  endif
+endif
+
 # Native suppor NTFS &EXFAT Filesystems
 TARGET_USES_EXFAT := true
 KERNEL_EXFAT_MODULE_NAME := "exfat"
