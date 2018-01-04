@@ -38,7 +38,7 @@ on init
 
 on fs
     mount_all ./fstab.duma
-    swapon_all ./fstab.flo
+    swapon_all ./fstab.duma
     restorecon_recursive /persist
     write /sys/kernel/boot_adsp/boot 1
 
