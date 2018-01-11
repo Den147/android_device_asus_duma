@@ -106,7 +106,7 @@ PRODUCT_COPY_FILES += \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
     device/asus/duma/audio/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_effects.xml \
     device/asus/duma/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
-    device/asus/duma/audio/mixer_paths.xml:system/etc/mixer_paths.xml
+    device/asus/duma/audio/mixer_paths.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths.xml
 
 # Get the long list of APNs
 PRODUCT_COPY_FILES += \
@@ -313,7 +313,7 @@ PRODUCT_PACKAGES += \
 
 # Thermal
 PRODUCT_COPY_FILES += \
-    device/asus/duma/configs/thermald-duma.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermald.conf
+    device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
 
 PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl
