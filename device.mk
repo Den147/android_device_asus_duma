@@ -354,6 +354,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     device/asus/duma/rootdir/etc/init.duma.wifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.duma.wifi.sh \
+    device/asus/duma/rootdir/etc/init.qcom.fm.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.fm.sh \
     device/asus/duma/wifi/WCNSS_cfg.dat:$(TARGET_COPY_OUT_VENDOR)/firmware/wlan/prima/WCNSS_cfg.dat \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin \
@@ -367,9 +368,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     wlan.wfd.hdcp=disable
 
 #FM Radio
-#PRODUCT_PACKAGES += \
-#    #FMRadio \
-#    libqcomfm_jni \
+PRODUCT_PACKAGES += \
+    FMRadio \
+    libfmjni
 #    qcom.fmradio \
 #    qcom.fmradio.xml \
 
