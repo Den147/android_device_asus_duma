@@ -307,6 +307,10 @@ PRODUCT_PACKAGES += \
     ueventd.rc \
     ueventd.duma.rc
 
+PRODUCT_COPY_FILES += \
+    device/asus/duma/rootdir/etc/init.qcom.devwait.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devwait.sh \
+    device/asus/duma/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh
+
 # Stlport
 PRODUCT_PACKAGES += \
     libstlport

@@ -133,6 +133,8 @@
 /system/vendor/bin/init\.duma\.wifi\.sh   u:object_r:conn_init_exec:s0
 /system/vendor/bin/irsc_util              u:object_r:irsc_util_exec:s0
 /system/vendor/bin/init\.duma\.bt\.sh     u:object_r:bluetooth_loader_exec:s0
+/system/vendor/bin/init\.qcom\.devstart\.sh            u:object_r:init-qcom-devstart-sh_exec:s0
+/system/vendor/bin/init\.qcom\.devwait\.sh             u:object_r:init-qcom-devwait-sh_exec:s0
 
 # Persist firmware filesystem
 /persist(/.*)?                    u:object_r:persist_file:s0
@@ -156,6 +158,9 @@
 # Sysfs files used by surfaceflinger
 /sys/devices/virtual/graphics/fb1/format_3d -- u:object_r:sysfs_surfaceflinger:s0
 /sys/devices/virtual/graphics/fb1/hpd       -- u:object_r:sysfs_surfaceflinger:s0
+
+# Sysfs entry for audio
+/sys/kernel/boot_adsp/boot         u:object_r:sysfs_audio:s0
 
 # Sysfs files used by Radio FM
 /sys/module/radio_iris_transport/parameters/fmsmd_set      u:object_r:sysfs_fm_dl:s0

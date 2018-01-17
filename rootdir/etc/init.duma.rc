@@ -40,12 +40,14 @@ on fs
     mount_all ./fstab.duma
     swapon_all ./fstab.duma
     restorecon_recursive /persist
-    write /sys/kernel/boot_adsp/boot 1
-
+    
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
+
+    # Busy loop to wait for devices booted by devstart_sh just in case device not ready
+    exec - root root system -- /vendor/bin/init.qcom.devwait.sh
 
 on boot
     #Create QMUX deamon socket area
@@ -138,6 +140,10 @@ on boot
 # Increased technology maximums should be reflected here.
     write /proc/sys/net/core/rmem_max  2097152
     write /proc/sys/net/core/wmem_max  2097152
+
+on post-fs
+    # Start devices by sysfs trigger
+    start devstart_sh
 
 # msm specific files that need to be created on /data
 on post-fs-data
@@ -376,6 +382,13 @@ service fm_dl /system/bin/sh /vendor/bin/init.qcom.fm.sh
     disabled
     oneshot
     seclabel u:r:fm_dl:s0
+
+service devstart_sh /vendor/bin/init.qcom.devstart.sh
+    class main
+    user root
+    group root system
+    disabled
+    oneshot
 
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
