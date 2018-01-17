@@ -42,6 +42,7 @@ on fs
     restorecon_recursive /persist
     write /sys/kernel/boot_adsp/boot 1
 
+
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
@@ -56,6 +57,9 @@ on boot
     chmod 2770 /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
+
+    chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
+    chmod 0660 /sys/module/radio_iri_transport/parameters/fmsmd_set
 
     # Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio
@@ -223,6 +227,15 @@ on post-fs-data
     # adjust vibrator amplitude
     write /sys/class/timed_output/vibrator/amp 70
 
+    mkdir /data/misc/fm 0770 system system
+    chmod 0770 /data/misc/fm
+
+    on property:hw.fm.init=1
+         write /sys/module/radio_iris_transport/parameters/fmsmd_set 1
+
+    on property:hw.fm.init=0
+         write /sys/module/radio_iris_transport/parameters/fmsmd_set 0
+
 service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class main
     user root
@@ -355,6 +368,14 @@ service ril-daemon /vendor/bin/hw/rild
     socket rild-debug stream 660 radio system
     user root
     group radio cache inet misc audio log readproc wakelock qcom_diag net_raw
+
+service fm_dl /system/bin/sh /vendor/bin/init.qcom.fm.sh
+    class late_start
+    user system
+    group system
+    disabled
+    oneshot
+    seclabel u:r:fm_dl:s0
 
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
