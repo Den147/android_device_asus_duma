@@ -19,6 +19,7 @@ bin/diag_klog:vendor/bin/diag_klog
 bin/diag_mdlog:vendor/bin/diag_mdlog
 bin/ds_fmc_appd:vendor/bin/ds_fmc_appd
 bin/efsks:vendor/bin/efsks
+bin/fm_qsoc_patches:vendor/bin/fm_qsoc_patches
 bin/hci_qcomm_init:vendor/bin/hci_qcomm_init
 bin/irsc_util:vendor/bin/irsc_util
 bin/ks:vendor/bin/ks
