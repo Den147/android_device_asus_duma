@@ -23,8 +23,9 @@ $(call inherit-product, frameworks/native/build/tablet-10in-xhdpi-2048-dalvik-he
 # Set LineageOS build tipe
 CM_BUILDTYPE := NIGHTLY
 
-# Overlays
-DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
+DEVICE_PACKAGE_OVERLAYS += \
+    device/asus/duma/overlay \
+    device/asus/duma/overlay-lineage
 
 PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
