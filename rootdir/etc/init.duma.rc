@@ -39,7 +39,11 @@ on init
 on fs
     mount_all ./fstab.duma
     restorecon_recursive /persist
+<<<<<<< HEAD
     
+=======
+    write /sys/kernel/boot_adsp/boot 1
+>>>>>>> parent of 642c328... Adding Radio FM Stuff - 1st attempt
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -58,9 +62,6 @@ on boot
     chmod 2770 /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
-
-    chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
-    chmod 0660 /sys/module/radio_iri_transport/parameters/fmsmd_set
 
     # Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio
@@ -232,6 +233,7 @@ on post-fs-data
     # adjust vibrator amplitude
     write /sys/class/timed_output/vibrator/amp 70
 
+<<<<<<< HEAD
     mkdir /data/misc/fm 0770 system system
     chmod 0770 /data/misc/fm
 
@@ -245,6 +247,8 @@ on post-fs-data
          # Enable ZRAM on boot_complete
          swapon_all ./fstab.duma
 
+=======
+>>>>>>> parent of 642c328... Adding Radio FM Stuff - 1st attempt
 service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class main
     user root
@@ -378,6 +382,7 @@ service ril-daemon /vendor/bin/hw/rild
     user root
     group radio cache inet misc audio log readproc wakelock qcom_diag net_raw
 
+<<<<<<< HEAD
 service fm_dl /system/bin/sh /vendor/bin/init.qcom.fm.sh
     class late_start
     user system
@@ -393,6 +398,8 @@ service devstart_sh /vendor/bin/init.qcom.devstart.sh
     disabled
     oneshot
 
+=======
+>>>>>>> parent of 642c328... Adding Radio FM Stuff - 1st attempt
 # on property:gsm.sim.state=READY
 #    start diag_mdlog
 

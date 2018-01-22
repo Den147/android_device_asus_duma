@@ -16,5 +16,3 @@ type modem_block_device, dev_type;
 type shared_log_device, dev_type;
 
 type power_control_device, dev_type;
-
-type fm_device, dev_type;
