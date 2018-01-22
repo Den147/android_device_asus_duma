@@ -97,3 +97,10 @@ LOCAL_SRC_FILES := etc/init.qcom.fm.sh
 LOCAL_MODULE_PATH := $(TARGET_OUT)/bin
 include $(BUILD_PREBUILT)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := fm_qsoc_patches
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := ETC
+LOCAL_SRC_FILES := etc/fm_qsoc_patches
+LOCAL_MODULE_PATH := $(TARGET_OUT)/bin
+include $(BUILD_PREBUILT)

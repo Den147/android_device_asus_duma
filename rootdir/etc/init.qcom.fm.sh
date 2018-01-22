@@ -60,17 +60,17 @@ case $mode in
   "normal")
         logi "inserting the radio transport module"
         echo 1 > /sys/module/radio_iris_transport/parameters/fmsmd_set
-        /vendor/bin/fm_qsoc_patches $version 0
+        /system/bin/fm_qsoc_patches $version 0
      ;;
   "wa_enable")
-   /vendor/bin/fm_qsoc_patches $version 1
+   /system/bin/fm_qsoc_patches $version 1
      ;;
   "wa_disable")
-   /vendor/bin/fm_qsoc_patches $version 2
+   /system/bin/fm_qsoc_patches $version 2
      ;;
    *)
     logi "Shell: Default case"
-    /vendor/bin/fm_qsoc_patches $version 0
+    /system/bin/fm_qsoc_patches $version 0
     ;;
 esac
 
