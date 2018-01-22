@@ -30,3 +30,5 @@ type sysfs_soc, sysfs_type, fs_type, mlstrustedobject;
 #type for devstart
 type sysfs_audio, sysfs_type, fs_type;
 
+# debugfs
+type debugfs_kgsl, debugfs_type, fs_type;

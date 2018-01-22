@@ -257,7 +257,7 @@ PRODUCT_COPY_FILES += \
 # Lights
 PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
-    android.hardware.light@2.0-service \ 
+    android.hardware.light@2.0-service \
     lights.msm8960 
 
  
@@ -331,7 +331,7 @@ PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl
 
 PRODUCT_PACKAGES += \
-    android.hardware.health@1.0-impl
+    android.hardware.health@1.0-impl \
     android.hardware.health@1.0-service
 
 # Sensors
@@ -364,7 +364,6 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     device/asus/duma/rootdir/etc/init.duma.wifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.duma.wifi.sh \
-    device/asus/duma/rootdir/etc/init.qcom.fm.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.fm.sh \
     device/asus/duma/wifi/WCNSS_cfg.dat:$(TARGET_COPY_OUT_VENDOR)/firmware/wlan/prima/WCNSS_cfg.dat \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin \

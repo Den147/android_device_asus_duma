@@ -20,9 +20,4 @@ genfscon sysfs /devices/system/soc/soc0                                 u:object
 # debugfs
 genfscon debugfs /kgsl/proc                                             u:object_r:debugfs_kgsl:s0
 
-# Sysfs files used wakelock
-genfscon sysfs /power/wake_lock -- u:object_r:sysfs_wake_lock:s0
-genfscon sysfs /power/wake_unlock -- u:object_r:sysfs_wake_lock:s0
 
-# WLAN fwpath
-genfscon sysfs /module/wlan/parameters/fwpath    u:object_r:sysfs_wlan_fwpath:s0
