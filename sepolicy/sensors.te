@@ -37,6 +37,8 @@ allow sensors power_control_device:chr_file w_file_perms;
 allow sensors persist_file:dir r_dir_perms;
 allow sensors persist_sensors_file:dir r_dir_perms;
 allow sensors persist_sensors_file:file rw_file_perms;
+allow sensors sysfs_soc:dir r_dir_perms;
+allow sensors sysfs_soc:file r_file_perms;
 
 # Wake lock access
 wakelock_use(sensors)

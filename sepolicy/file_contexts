@@ -148,7 +148,8 @@
 /sys/class/android_usb/f_rmnet_smd_sdio/transport  --  u:object_r:sysfs_rmnet:s0
 /sys/devices/virtual/android_usb/android0/f_rmnet_smd_sdio/transport  --  u:object_r:sysfs_rmnet:s0
 /sys/module/rmnet_usb/parameters/rmnet_data_init -- u:object_r:sysfs_rmnet:s0
-
+/sys/devices/platform/msm_ssbi.0/pm8921-core/pm8xxx-led      u:object_r:sysfs_leds:s0
+/sys/devices/platform/msm_fb.591617/leds/lcd-backlight       u:object_r:sysfs_leds:s0
 # Sysfs files used by mpdecision
 /sys/module/pm2/modes(/.*)?            u:object_r:sysfs_mpdecision:s0
 /sys/module/pm_8x60/modes(/.*)?        u:object_r:sysfs_mpdecision:s0
@@ -159,6 +160,10 @@
 
 # Sysfs entry for audio
 /sys/kernel/boot_adsp/boot         u:object_r:sysfs_audio:s0
+/sys/devices/system/soc/soc0                                 u:object_r:sysfs_soc:s0
+
+# debugfs
+/debug/kgsl/proc                                             u:object_r:debugfs_kgsl:s0
 
 # Sysfs files used wakelock
 /sys/power/wake_lock -- u:object_r:sysfs_wake_lock:s0
