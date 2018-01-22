@@ -24,10 +24,8 @@ type persist_wifi_file, file_type;
 type sysfs_rmnet, fs_type, sysfs_type;
 type sysfs_mpdecision, fs_type, sysfs_type;
 type sysfs_surfaceflinger, fs_type, sysfs_type;
-<<<<<<< HEAD
+
 
 #type for devstart
 type sysfs_audio, sysfs_type, fs_type;
-type sysfs_fm_dl, fs_type, sysfs_type;
-=======
->>>>>>> parent of 642c328... Adding Radio FM Stuff - 1st attempt
+
