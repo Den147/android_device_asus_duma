@@ -89,7 +89,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
+    android.hardware.audio@2.0-service \
     android.hardware.audio.effect@2.0-impl \
+    android.hardware.audio.effect@2.0-service \
     audio.primary.msm8960 \
     audio.a2dp.default \
     audio.usb.default \
@@ -133,7 +135,8 @@ PRODUCT_PACKAGES += \
 
 # Thermal HIDL interfaces
 PRODUCT_PACKAGES += \
-    android.hardware.thermal@1.0-impl
+    android.hardware.thermal@1.0-impl \
+    android.hardware.bluetooth@1.0-service
 
 # USB HAL
 PRODUCT_PACKAGES += \
@@ -194,6 +197,7 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-impl \
     android.hardware.graphics.mapper@2.0-impl \
     android.hardware.memtrack@1.0-impl \
+    android.hardware.memtrack@1.0-service \
     libgenlock \
     hwcomposer.msm8960 \
     gralloc.msm8960 \
@@ -202,7 +206,8 @@ PRODUCT_PACKAGES += \
 
 # GNSS HAL
 PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl
+    android.hardware.gnss@1.0-impl \
+    android.hardware.gnss@1.0-service
 
 # RenderScript HIDL interfaces
 PRODUCT_PACKAGES += \
@@ -242,7 +247,8 @@ PRODUCT_COPY_FILES += \
 
 # Keymaster
 PRODUCT_PACKAGES += \
-    android.hardware.keymaster@3.0-impl
+    android.hardware.keymaster@3.0-impl \
+    android.hardware.keymaster@3.0-service
 
 # Kickstart
 PRODUCT_COPY_FILES += \
@@ -251,6 +257,7 @@ PRODUCT_COPY_FILES += \
 # Lights
 PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
+    android.hardware.light@2.0-service \ 
     lights.msm8960 
 
  
@@ -325,10 +332,12 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
     android.hardware.health@1.0-impl
+    android.hardware.health@1.0-service
 
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
+    android.hardware.sensors@1.0-service \
     sensors.msm8960
 
 PRODUCT_COPY_FILES += \
@@ -355,6 +364,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     device/asus/duma/rootdir/etc/init.duma.wifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.duma.wifi.sh \
+    device/asus/duma/rootdir/etc/init.qcom.fm.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.fm.sh \
     device/asus/duma/wifi/WCNSS_cfg.dat:$(TARGET_COPY_OUT_VENDOR)/firmware/wlan/prima/WCNSS_cfg.dat \
     device/asus/duma/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin \
@@ -369,13 +379,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 #FM Radio
 #PRODUCT_PACKAGES += \
-#    #FMRadio \
-#    libqcomfm_jni \
+#    FM2 \
+#    libfmjni
 #    qcom.fmradio \
 #    qcom.fmradio.xml \
 
-PRODUCT_PACKAGES += \
-    android.hardware.broadcastradio@1.0-impl
+#PRODUCT_PACKAGES += \
+#    android.hardware.broadcastradio@1.0-impl
 
 # Voice processing
 PRODUCT_PACKAGES += \
