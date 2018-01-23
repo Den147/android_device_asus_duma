@@ -45,3 +45,6 @@ r_dir_file(mpdecision, mediaserver)
 r_dir_file(mpdecision, cameraserver)
 
 allow mpdecision self:capability sys_nice;
+allow mpdecision hal_power_default:dir r_dir_perms;
+allow mpdecision hal_power_default:file r_file_perms;
+

@@ -1,0 +1,5 @@
+allow hal_power_default mpdecision:unix_dgram_socket sendto;
+allow hal_power_default mpdecision_socket:sock_file rw_file_perms;
+allow hal_power_default oemfs:dir search;
+allow hal_power_default self:netlink_kobject_uevent_socket read;
+
