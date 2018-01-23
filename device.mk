@@ -62,13 +62,6 @@ PRODUCT_PACKAGES := \
 PRODUCT_PACKAGES += \
     CatLog
 
-# Some Asus apps
-PRODUCT_PACKAGES += \
-    FileManager \
-    ZenUI \
-    Browser \
-    PixelMaster
-
 # Keyhandler
 #PRODUCT_PACKAGES += \
 #    Gestures
