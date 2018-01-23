@@ -37,8 +37,20 @@ on init
 
 
 on fs
-    mount_all ./fstab.duma
+    mount_all ./fstab.duma --early
     restorecon_recursive /persist
+
+    # Start HW service manager early
+    start hwservicemanager
+
+on late-fs
+    # Start services for bootanimation
+    start surfaceflinger
+    start bootanim
+    start configstore-hal-1-0
+    start gralloc-2-0
+
+    mount_all ./fstab.duma --late
 
    
 on early-boot
