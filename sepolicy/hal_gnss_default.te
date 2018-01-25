@@ -5,4 +5,5 @@ allow hal_gnss_default sysfs_soc:dir r_dir_perms;
 allow hal_gnss_default sysfs_soc:file r_file_perms;
 
 allow hal_gnss_default self:socket create_socket_perms;
+allow hal_gnss_default self:netlink_socket write;
 allowxperm hal_gnss_default self:socket ioctl msm_sock_ipc_ioctls;
