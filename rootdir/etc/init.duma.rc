@@ -21,6 +21,8 @@ on early-init
     mount debugfs debugfs /sys/kernel/debug
     chown system system /sys/kernel/debug/kgsl/proc
     symlink /data/tombstones /tombstones
+    # Set serial number property for wcnss_service
+    setprop ro.wcnss.serialno ${ro.boot.serialno}
 
 on init
     # Support legacy paths
