@@ -334,9 +334,6 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-service \
     sensors.msm8960
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/sensors/_hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/_hals.conf
-
 
 # Touchscreen calibration
 PRODUCT_COPY_FILES += \
