@@ -103,7 +103,6 @@
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
-            <name>IWifi</name>
             <name>IOmx</name>
             <instance>default</instance>
         </interface>
