@@ -60,17 +60,17 @@ $(shell ln -sf /system/vendor/firmware/tzapps.b00 \
 $(shell ln -sf /system/vendor/etc/firmware/vidc.mdt \
 		$(TARGET_OUT)/etc/firmware/vidc.mdt;\
         ln -sf /system/vendor/etc/firmware/vidc.b00 \
-		$(TARGET_OUT)/etc/firmware/vidc.b00;\	
+		$(TARGET_OUT)/etc/firmware/vidc.b00;\
         ln -sf /system/vendor/etc/firmware/vidc.b01 \
-		$(TARGET_OUT)/etc/firmware/vidc.b01;\	
+		$(TARGET_OUT)/etc/firmware/vidc.b01;\
         ln -sf /system/vendor/etc/firmware/vidc.b02 \
-		$(TARGET_OUT)/etc/firmware/vidc.b02;\	
+		$(TARGET_OUT)/etc/firmware/vidc.b02;\
         ln -sf /system/vendor/etc/firmware/vidc.b03 \
-		$(TARGET_OUT)/etc/firmware/vidc.b03;\	
+		$(TARGET_OUT)/etc/firmware/vidc.b03;\
         ln -sf /system/vendor/etc/firmware/vidcfw.elf \
-		$(TARGET_OUT)/etc/firmware/vidcfw.elf;\	
+		$(TARGET_OUT)/etc/firmware/vidcfw.elf;\
         ln -sf /system/vendor/etc/firmware/vidc_1080p.fw \
-		$(TARGET_OUT)/etc/firmware/vidc_1080p.fw)\	
+		$(TARGET_OUT)/etc/firmware/vidc_1080p.fw)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
