@@ -83,6 +83,9 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 # Graphics
 SF_START_GRAPHICS_ALLOCATOR_SERVICE := true
 
+# Wifi Display
+TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS := true
+
 # Vendor Interface Manifest
 DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
 
