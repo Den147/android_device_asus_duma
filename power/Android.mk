@@ -18,9 +18,14 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE_RELATIVE_PATH := hw
-LOCAL_SRC_FILES := power_duma.c
-LOCAL_SHARED_LIBRARIES := liblog libcutils
+LOCAL_SRC_FILES := service.cpp \
+                   Power.cpp \
+                   power-helper.c
+
+LOCAL_SHARED_LIBRARIES := liblog libcutils libhidlbase libhidltransport libhardware libutils android.hardware.power@1.0
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := power.duma
+LOCAL_MODULE_OWNER := qcom
+LOCAL_MODULE := android.hardware.power@1.0-service.qcom
+LOCAL_INIT_RC := android.hardware.power@1.0-service.qcom.rc
 LOCAL_PROPRIETARY_MODULE := true
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_EXECUTABLE)

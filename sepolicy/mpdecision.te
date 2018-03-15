@@ -46,6 +46,7 @@ allow mpdecision sysfs:file write;
 r_dir_file(mpdecision, system_server)
 r_dir_file(mpdecision, mediaserver)
 r_dir_file(mpdecision, cameraserver)
+r_dir_file(mpdecision, hal_power_default)
 
 allow mpdecision self:capability sys_nice;
 allow mpdecision hal_power_default:dir r_dir_perms;

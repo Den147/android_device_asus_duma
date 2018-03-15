@@ -32,8 +32,9 @@
 #define LOG_TAG "PowerHAL"
 #include <utils/Log.h>
 
-#include <hardware/hardware.h>
 #include <hardware/power.h>
+
+#include "power-helper.h"
 
 #define STATE_ON "state=1"
 #define STATE_OFF "state=0"
@@ -203,13 +204,40 @@ static void uevent_init()
     return;
 }
 
-static void power_init(__attribute__((unused)) struct power_module *module)
+void power_init(void)
 {
     ALOGI("%s", __func__);
     socket_init();
     uevent_init();
 }
 
+static void sync_thread(int off)
+{
+    int rc;
+    pid_t client;
+    char data[MAX_LENGTH];
+
+    if (client_sockfd < 0) {
+        ALOGE("%s: boost socket not created", __func__);
+        return;
+    }
+
+    client = getpid();
+
+    if (!off) {
+        snprintf(data, MAX_LENGTH, "2:%d", client);
+        rc = sendto(client_sockfd, data, strlen(data), 0,
+            (const struct sockaddr *)&client_addr, sizeof(struct sockaddr_un));
+    } else {
+        snprintf(data, MAX_LENGTH, "3:%d", client);
+        rc = sendto(client_sockfd, data, strlen(data), 0,
+            (const struct sockaddr *)&client_addr, sizeof(struct sockaddr_un));
+    }
+
+    if (rc < 0) {
+        ALOGE("%s: failed to send: %s", __func__, strerror(errno));
+    }
+}
 
 static void enc_boost(int off)
 {
@@ -252,9 +280,11 @@ static void process_video_encode_hint(void *metadata)
     if (metadata) {
         if (!strncmp(metadata, STATE_ON, sizeof(STATE_ON))) {
             /* Video encode started */
+            sync_thread(1);
             enc_boost(1);
         } else if (!strncmp(metadata, STATE_OFF, sizeof(STATE_OFF))) {
             /* Video encode stopped */
+            sync_thread(0);
             enc_boost(0);
         }  else if (!strncmp(metadata, STATE_HDR_ON, sizeof(STATE_HDR_ON))) {
             /* HDR usecase started */
@@ -284,13 +314,12 @@ static void touch_boost()
     snprintf(data, MAX_LENGTH, "1:%d", client);
     rc = sendto(client_sockfd, data, strlen(data), 0,
         (const struct sockaddr *)&client_addr, sizeof(struct sockaddr_un));
-    /* Remove Logspam when mpdecision is not on or present 
     if (rc < 0) {
         ALOGE("%s: failed to send: %s", __func__, strerror(errno));
-    }*/
+    }
 }
 
-static void power_set_interactive(__attribute__((unused)) struct power_module *module, int on)
+void power_set_interactive(int on)
 {
     if (last_state == -1) {
         last_state = on;
@@ -303,18 +332,20 @@ static void power_set_interactive(__attribute__((unused)) struct power_module *m
 
     ALOGV("%s %s", __func__, (on ? "ON" : "OFF"));
     if (on) {
+        sync_thread(0);
         touch_boost();
+    } else {
+        sync_thread(1);
     }
 }
 
-static void power_hint( __attribute__((unused)) struct power_module *module,
-                      power_hint_t hint, __attribute__((unused)) void *data)
+void power_hint(power_hint_t hint, void *data)
 {
     int cpu, ret;
 
     switch (hint) {
         case POWER_HINT_INTERACTION:
-        case POWER_HINT_LAUNCH:   
+        case POWER_HINT_LAUNCH:
             ALOGV("POWER_HINT_INTERACTION");
             touch_boost();
             break;
@@ -329,6 +360,7 @@ static void power_hint( __attribute__((unused)) struct power_module *module,
 
         case POWER_HINT_LOW_POWER:
              pthread_mutex_lock(&low_power_mode_lock);
+             ALOGI("POWER_HINT_LOW_POWER");
              if (data) {
                  low_power_mode = true;
                  for (cpu = 0; cpu < TOTAL_CPUS; cpu++) {
@@ -353,58 +385,3 @@ static void power_hint( __attribute__((unused)) struct power_module *module,
              break;
     }
 }
-
-static int power_open(const hw_module_t* module, const char* name,
-                    hw_device_t** device)
-{
-    ALOGD("%s: enter; name=%s", __FUNCTION__, name);
-    int retval = 0; // 0 is ok -1 is error 
-
-    if (strcmp(name, POWER_HARDWARE_MODULE_ID) == 0) {
-        power_module_t *dev = (power_module_t *)calloc(1,
-                sizeof(power_module_t));
-
-        if (dev) {
-            // Common hw_device_t fields 
-            dev->common.tag = HARDWARE_DEVICE_TAG;
-            dev->common.module_api_version = POWER_MODULE_API_VERSION_0_2;
-            dev->common.hal_api_version = HARDWARE_HAL_API_VERSION;
-
-            dev->init = power_init;
-            dev->powerHint = power_hint;
-            dev->setInteractive = power_set_interactive;
-            /*
-            dev->get_number_of_platform_modes = get_number_of_platform_modes;
-            dev->get_platform_low_power_stats = get_platform_low_power_stats;
-            dev->get_voter_list = NULL;*/
-
-            *device = (hw_device_t*)dev;
-        } else
-            retval = -ENOMEM;
-    } else {
-        retval = -EINVAL;
-    }
-
-    ALOGD("%s: exit %d", __FUNCTION__, retval);
-    return retval;
-}
-
-static struct hw_module_methods_t power_module_methods = {
-    .open = power_open,
-};
-
-struct power_module HAL_MODULE_INFO_SYM = {
-    .common = {
-        .tag = HARDWARE_MODULE_TAG,
-        .module_api_version = POWER_MODULE_API_VERSION_0_2,
-        .hal_api_version = HARDWARE_HAL_API_VERSION,
-        .id = POWER_HARDWARE_MODULE_ID,
-        .name = "Duma Power HAL",
-        .author = "The Android Open Source Project",
-        .methods = &power_module_methods,
-    },
-
-    .init = power_init,
-    .setInteractive = power_set_interactive,
-    .powerHint = power_hint,
-};
