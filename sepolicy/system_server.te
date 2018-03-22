@@ -1,2 +1,2 @@
 allow system_server sensors_socket:sock_file getattr;
-
+allow system_server sysfs_graphics:file write;
