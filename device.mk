@@ -294,8 +294,7 @@ PRODUCT_COPY_FILES += \
 
 # Power
 PRODUCT_PACKAGES += \
-    android.hardware.power@1.0-service.qcom
-
+    android.hardware.power@1.0-service-qti
  
 
 # Ramdisk
