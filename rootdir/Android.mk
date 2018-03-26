@@ -89,12 +89,4 @@ LOCAL_SRC_FILES := etc/init.duma.wifi.sh
 LOCAL_MODULE_PATH := $(TARGET_OUT)/bin
 include $(BUILD_PREBUILT)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := android.hardware.wifi@1.0-service.rc
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_CLASS := ETC
-LOCAL_SRC_FILES := android.hardware.wifi@1.0-service.rc
-LOCAL_MODULE_PATH := $(TARGET_OUT)/etc/init
-include $(BUILD_PREBUILT)
-
 
