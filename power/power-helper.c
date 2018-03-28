@@ -59,7 +59,7 @@
    Path for QCACLD2 and Prima: /d/wlan_wcnss/power_stats
 */
 
-#ifdef LEGACY_STATS
+
 /* Use these stats on pre-nougat qualcomm kernels */
 static const char *rpm_param_names[] = {
     "vlow_count",
@@ -78,7 +78,7 @@ static const char *rpm_master_param_names[] = {
     "xo_accumulated_duration",
     "xo_count"
 };
-#endif
+
 
 #define STATE_ON "state=1"
 #define STATE_OFF "state=0"
@@ -430,7 +430,7 @@ void power_hint(power_hint_t hint, void *data)
     }
 }
 
-#ifdef LEGACY_STATS
+
 static int extract_stats(uint64_t *list, char *file, const char**param_names,
                          unsigned int num_parameters, int isHex) {
     FILE *fp;
@@ -494,4 +494,4 @@ int extract_platform_stats(uint64_t *list) {
     }
     return 0;
 }
-#endif
+
