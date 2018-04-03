@@ -62,20 +62,6 @@ PRODUCT_PACKAGES := \
 PRODUCT_PACKAGES += \
     CatLog
 
-# Keyhandler
-#PRODUCT_PACKAGES += \
-#    Gestures
-#    com.lineageos.keyhandler \
-
-
-#PRODUCT_SYSTEM_SERVER_JARS += \
-#    com.lineageos.keyhandler
-
-# OmniParts
-#PRODUCT_PACKAGES += \
-#    OmniParts
-
-
 PRODUCT_PROPERTY_OVERRIDES += \
     rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
 
@@ -123,28 +109,19 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 # Bluetooth HAL
 PRODUCT_PACKAGES += \
     libbt-vendor \
-    android.hardware.bluetooth@1.0-impl  
-
-
-# Thermal HIDL interfaces
-PRODUCT_PACKAGES += \
-    android.hardware.thermal@1.0-impl \
+    android.hardware.bluetooth@1.0-impl \
     android.hardware.bluetooth@1.0-service
 
-# USB HAL
-PRODUCT_PACKAGES += \
-    android.hardware.usb@1.0-service
- 
 # Configure ro.recents.grid
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.recents.grid=false
+    ro.recents.grid=true
 
 # Configstore HIDL interfaces
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service
 
 
-# Preset for Russia
+# Preset for ITALY
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.timezone=Europe/Rome \
     persist.sys.language=it \
@@ -203,22 +180,10 @@ PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl \
     android.hardware.gnss@1.0-service
 
-# RenderScript HIDL interfaces
-PRODUCT_PACKAGES += \
-    android.hardware.renderscript@1.0-impl
-
-# RIL HIDL interfaces
-PRODUCT_PACKAGES += \
-    android.hardware.radio@1.0-impl \
-    android.hardware.radio.deprecated@1.0-impl
-
-
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8960
 
-#PRODUCT_COPY_FILES += \
-#    device/asus/duma/configs/gps.conf:$(TARGET_COPY_OUT_VENDOR)/etc/gps.conf    It's in vendor tree...
 
 # IPC router config
 PRODUCT_COPY_FILES += \
@@ -311,20 +276,19 @@ PRODUCT_COPY_FILES += \
     device/asus/duma/rootdir/etc/init.qcom.devwait.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devwait.sh \
     device/asus/duma/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh
 
+# RenderScript HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.renderscript@1.0-impl
+
+# RIL HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.radio@1.0-impl \
+    android.hardware.radio.deprecated@1.0-impl
+
 # Stlport
 PRODUCT_PACKAGES += \
     libstlport
 
-# Thermal
-PRODUCT_COPY_FILES += \
-    device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
-
-PRODUCT_PACKAGES += \
-    android.hardware.thermal@1.0-impl
-
-PRODUCT_PACKAGES += \
-    android.hardware.health@1.0-impl \
-    android.hardware.health@1.0-service
 
 # Sensors
 PRODUCT_PACKAGES += \
@@ -332,11 +296,31 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-service \
     sensors.msm8960
 
+# Thermal HIDL interfaces
+PRODUCT_PACKAGES += \
+    android.hardware.thermal@1.0-impl
+
+# Thermal
+PRODUCT_COPY_FILES += \
+    device/asus/duma/configs/thermald-duma.conf:system/etc/thermald.conf
+
+PRODUCT_PACKAGES += \
+    android.hardware.health@1.0-impl \
+    android.hardware.health@1.0-service
 
 # Touchscreen calibration
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/touch_dev.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/touch_dev.idc \
     device/asus/duma/configs/elan-touchscreen.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/elan-touchscreen.idc
+
+# USB HAL
+PRODUCT_PACKAGES += \
+    android.hardware.usb@1.0-service
+
+# Voice processing
+PRODUCT_PACKAGES += \
+    libqcomvoiceprocessing \
+    libqcomvoiceprocessingdescriptors
 
 # Wifi
 PRODUCT_PACKAGES += \
@@ -364,19 +348,4 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.debug.wfd.enable=1 \
     persist.sys.wfd.virtual=0 \
     wlan.wfd.hdcp=disable
-
-#FM Radio
-#PRODUCT_PACKAGES += \
-#    FM2 \
-#    libfmjni
-#    qcom.fmradio \
-#    qcom.fmradio.xml \
-
-#PRODUCT_PACKAGES += \
-#    android.hardware.broadcastradio@1.0-impl
-
-# Voice processing
-PRODUCT_PACKAGES += \
-    libqcomvoiceprocessing \
-    libqcomvoiceprocessingdescriptors
 
