@@ -127,6 +127,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.language=it \
     persist.sys.country=IT
 
+# CABL
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.qualcomm.cabl=1 \
+    hw.cabl.level=Auto
+
 # Camera HILD
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
