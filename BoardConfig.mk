@@ -40,8 +40,8 @@ BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma user
 BOARD_KERNEL_CMDLINE += vmalloc=340M  androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/duma
-#TARGET_KERNEL_CONFIG := elementalx_defconfig
-TARGET_KERNEL_CONFIG := duma-lineageos_defconfig
+TARGET_KERNEL_CONFIG := elementalx_defconfig
+#TARGET_KERNEL_CONFIG := duma-lineageos_defconfig
 #KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
 #KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
