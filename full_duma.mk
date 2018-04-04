@@ -28,3 +28,9 @@ PRODUCT_NAME := full_duma
 PRODUCT_BRAND := Asus
 PRODUCT_MODEL := ME302KL
 PRODUCT_MANUFACTURER := Asus
+
+PRODUCT_BUILD_PROP_OVERRIDES += \
+    ro.com.google.clientidbase=android-asus \
+    BUILD_FINGERPRINT="asus/WW_epad/EeePad:4.2.2/JDQ39/WW_epad-10.10.3.39-20131220:user/release-keys" \
+    PRIVATE_BUILD_DESC="WW_epad-user 4.2.2 JDQ39 WW_epad-10.10.3.39-20131220 release-keys"
+
