@@ -316,7 +316,8 @@ PRODUCT_PACKAGES += \
 # Touchscreen calibration
 PRODUCT_COPY_FILES += \
     device/asus/duma/configs/touch_dev.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/touch_dev.idc \
-    device/asus/duma/configs/elan-touchscreen.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/elan-touchscreen.idc
+    device/asus/duma/configs/elan-touchscreen.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/elan-touchscreen.idc \
+    device/asus/duma/configs/elantech_touchscreen.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/elantech_touchscreen.idc
 
 # USB HAL
 PRODUCT_PACKAGES += \

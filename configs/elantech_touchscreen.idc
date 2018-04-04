@@ -13,7 +13,7 @@
 # limitations under the License.
 
 #
-# Input Device Configuration File for the ELAN touch panel device.
+# Input Device Configuration File for the Atmel Maxtouch touch screen.
 #
 # These calibration values are derived from empirical measurements
 # and may not be appropriate for use with other touch screens.
@@ -21,18 +21,9 @@
 #
 
 # Basic Parameters
-touch.deviceType = touchScreen
+touch.deviceType = pointer
 touch.orientationAware = 1
-
-# Size
-touch.size.calibration = area
-touch.size.scale = 36
-touch.size.bias = 0
-
-# Pressure
-touch.pressure.calibration = amplitude
-touch.pressure.scale = 0.0048
-
-# Orientation
-touch.orientation.calibration = none
-
+touch.gestureMode = spots
+device.external = 1
+touch.usingJitterFilter = 1
+touch.supportElanPalmRejection = 0
