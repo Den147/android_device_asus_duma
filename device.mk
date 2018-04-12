@@ -242,7 +242,9 @@ PRODUCT_PACKAGES += \
     libOmxVdec \
     libOmxVenc \
     libOmxCore \
-    libstagefrighthw
+    libstagefrighthw \
+    libc2dcolorconvert \
+    libdivxdrmdecrypt
 
 # Permissions/features
 PRODUCT_COPY_FILES += \
