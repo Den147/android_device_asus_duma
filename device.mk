@@ -141,7 +141,7 @@ PRODUCT_PACKAGES += \
 # Camera
 PRODUCT_PACKAGES += \
     Snap \
-    camera.msm8960 
+    camera.duma 
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
