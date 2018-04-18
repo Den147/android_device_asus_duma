@@ -135,13 +135,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Camera HILD
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
-    camera.device@3.2-impl \
-    android.hardware.camera.provider@2.4-service
+    android.hardware.camera.provider@2.4-service \
+    camera.device@3.2-impl
 
 # Camera
 PRODUCT_PACKAGES += \
-    Snap \
-    camera.duma 
+    libmmcamera_interface2 \
+    libmmcamera_interface \
+    Camera2 \
+    camera.duma
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
