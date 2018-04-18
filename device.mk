@@ -293,11 +293,6 @@ PRODUCT_PACKAGES += \
     android.hardware.radio@1.0-impl \
     android.hardware.radio.deprecated@1.0-impl
 
-# Stlport
-PRODUCT_PACKAGES += \
-    libstlport
-
-
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
