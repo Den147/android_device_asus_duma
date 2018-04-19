@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -34,13 +34,14 @@
 #include <utils/Errors.h>
 #include <hardware/camera3.h>
 
+#include "../util/QCameraFlash.h"
 #include "QCamera3Factory.h"
 
 using namespace android;
 
 namespace qcamera {
 
-QCamera3Factory gQCamera3Factory;
+QCamera3Factory *gQCamera3Factory = NULL;
 
 /*===========================================================================
  * FUNCTION   : QCamera3Factory
@@ -53,7 +54,19 @@ QCamera3Factory gQCamera3Factory;
  *==========================================================================*/
 QCamera3Factory::QCamera3Factory()
 {
+    camera_info info;
+
+    mCallbacks = NULL;
     mNumOfCameras = get_num_of_cameras();
+
+    //Query camera at this point in order
+    //to avoid any delays during subsequent
+    //calls to 'getCameraInfo()'
+    for (int i = 0 ; i < mNumOfCameras ; i++) {
+        getCameraInfo(i, &info);
+    }
+    //
+
 }
 
 /*===========================================================================
@@ -80,7 +93,7 @@ QCamera3Factory::~QCamera3Factory()
  *==========================================================================*/
 int QCamera3Factory::get_number_of_cameras()
 {
-    return gQCamera3Factory.getNumberOfCameras();
+    return gQCamera3Factory->getNumberOfCameras();
 }
 
 /*===========================================================================
@@ -98,7 +111,60 @@ int QCamera3Factory::get_number_of_cameras()
  *==========================================================================*/
 int QCamera3Factory::get_camera_info(int camera_id, struct camera_info *info)
 {
-    return gQCamera3Factory.getCameraInfo(camera_id, info);
+    return gQCamera3Factory->getCameraInfo(camera_id, info);
+}
+
+
+/*===========================================================================
+ * FUNCTION   : set_callbacks
+ *
+ * DESCRIPTION: static function to set callbacks function to camera module
+ *
+ * PARAMETERS :
+ *   @callbacks : ptr to callback functions
+ *
+ * RETURN     : NO_ERROR  -- success
+ *              none-zero failure code
+ *==========================================================================*/
+int QCamera3Factory::set_callbacks(const camera_module_callbacks_t *callbacks)
+{
+    return gQCamera3Factory->setCallbacks(callbacks);
+}
+
+/*===========================================================================
+ * FUNCTION   : open_legacy
+ *
+ * DESCRIPTION: Function to open older hal version implementation
+ *
+ * PARAMETERS :
+ *   @hw_device : ptr to struct storing camera hardware device info
+ *   @camera_id : camera ID
+ *   @halVersion: Based on camera_module_t.common.module_api_version
+ *
+ * RETURN     : 0  -- success
+ *              none-zero failure code
+ *==========================================================================*/
+int QCamera3Factory::open_legacy(const struct hw_module_t* module,
+            const char* id, uint32_t halVersion, struct hw_device_t** device)
+{
+    return -ENOSYS;
+}
+
+/*===========================================================================
+ * FUNCTION   : set_torch_mode
+ *
+ * DESCRIPTION: Attempt to turn on or off the torch mode of the flash unit.
+ *
+ * PARAMETERS :
+ *   @camera_id : camera ID
+ *   @on        : Indicates whether to turn the flash on or off
+ *
+ * RETURN     : 0  -- success
+ *              none-zero failure code
+ *==========================================================================*/
+int QCamera3Factory::set_torch_mode(const char* camera_id, bool on)
+{
+    return gQCamera3Factory->setTorchMode(camera_id, on);
 }
 
 /*===========================================================================
@@ -143,6 +209,33 @@ int QCamera3Factory::getCameraInfo(int camera_id, struct camera_info *info)
     return rc;
 }
 
+
+/*===========================================================================
+ * FUNCTION   : setCallbacks
+ *
+ * DESCRIPTION: set callback functions to send asynchronous notifications to
+ *              frameworks.
+ *
+ * PARAMETERS :
+ *   @callbacks : callback function pointer
+ *
+ * RETURN     :
+ *              NO_ERROR  -- success
+ *              none-zero failure code
+ *==========================================================================*/
+int QCamera3Factory::setCallbacks(const camera_module_callbacks_t *callbacks)
+{
+    int rc = NO_ERROR;
+    mCallbacks = callbacks;
+
+    rc = QCameraFlash::getInstance().registerCallbacks(callbacks);
+    if (rc != 0) {
+        ALOGE("%s : Failed to register callbacks with flash module!", __func__);
+    }
+
+    return rc;
+}
+
 /*===========================================================================
  * FUNCTION   : cameraDeviceOpen
  *
@@ -163,7 +256,8 @@ int QCamera3Factory::cameraDeviceOpen(int camera_id,
     if (camera_id < 0 || camera_id >= mNumOfCameras)
         return -ENODEV;
 
-    QCamera3HardwareInterface *hw = new QCamera3HardwareInterface(camera_id);
+    QCamera3HardwareInterface *hw = new QCamera3HardwareInterface(
+            camera_id, mCallbacks);
     if (!hw) {
         ALOGE("Allocation of hardware interface failed");
         return NO_MEMORY;
@@ -201,12 +295,75 @@ int QCamera3Factory::camera_device_open(
         ALOGE("Invalid camera id");
         return BAD_VALUE;
     }
-    return gQCamera3Factory.cameraDeviceOpen(atoi(id), hw_device);
+    return gQCamera3Factory->cameraDeviceOpen(atoi(id), hw_device);
 }
 
 struct hw_module_methods_t QCamera3Factory::mModuleMethods = {
     .open = QCamera3Factory::camera_device_open,
 };
 
+/*===========================================================================
+ * FUNCTION   : setTorchMode
+ *
+ * DESCRIPTION: Attempt to turn on or off the torch mode of the flash unit.
+ *
+ * PARAMETERS :
+ *   @camera_id : camera ID
+ *   @on        : Indicates whether to turn the flash on or off
+ *
+ * RETURN     : 0  -- success
+ *              none-zero failure code
+ *==========================================================================*/
+int QCamera3Factory::setTorchMode(const char* camera_id, bool on)
+{
+    int retVal(0);
+    long cameraIdLong(-1);
+    int cameraIdInt(-1);
+    char* endPointer = NULL;
+    errno = 0;
+    QCameraFlash& flash = QCameraFlash::getInstance();
+
+    cameraIdLong = strtol(camera_id, &endPointer, 10);
+
+    if ((errno == ERANGE) ||
+            (cameraIdLong < 0) ||
+            (cameraIdLong >= static_cast<long>(get_number_of_cameras())) ||
+            (endPointer == camera_id) ||
+            (*endPointer != '\0')) {
+        retVal = -EINVAL;
+    } else if (on) {
+        cameraIdInt = static_cast<int>(cameraIdLong);
+        retVal = flash.initFlash(cameraIdInt);
+
+        if (retVal == 0) {
+            retVal = flash.setFlashMode(cameraIdInt, on);
+            if ((retVal == 0) && (mCallbacks != NULL)) {
+                mCallbacks->torch_mode_status_change(mCallbacks,
+                        camera_id,
+                        TORCH_MODE_STATUS_AVAILABLE_ON);
+            } else if (retVal == -EALREADY) {
+                // Flash is already on, so treat this as a success.
+                retVal = 0;
+            }
+        }
+    } else {
+        cameraIdInt = static_cast<int>(cameraIdLong);
+        retVal = flash.setFlashMode(cameraIdInt, on);
+
+        if (retVal == 0) {
+            retVal = flash.deinitFlash(cameraIdInt);
+            if ((retVal == 0) && (mCallbacks != NULL)) {
+                mCallbacks->torch_mode_status_change(mCallbacks,
+                        camera_id,
+                        TORCH_MODE_STATUS_AVAILABLE_OFF);
+            }
+        } else if (retVal == -EALREADY) {
+            // Flash is already off, so treat this as a success.
+            retVal = 0;
+        }
+    }
+
+    return retVal;
+}
 }; // namespace qcamera
 

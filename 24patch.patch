@@ -1,0 +1,1471 @@
+From cf211e55c86d22f382be37f06e03efb6ad1cba58 Mon Sep 17 00:00:00 2001
+From: Den147 <den14712@gmail.com>
+Date: Fri, 13 Apr 2018 22:02:08 +0300
+Subject: [PATCH] HAL3: Update CAMERA_MODULE_API_VERSION to 2.4
+
+---
+ "camera/QCamera2/HAL3/Android.mk"           |   2 +
+ "camera/QCamera2/HAL3/QCamera3Factory.cpp"  | 172 +++++++++-
+ "camera/QCamera2/HAL3/QCamera3Factory.h"    |   7 +
+ "camera/QCamera2/HAL3/QCamera3HWI.cpp"      | 101 +++---
+ "camera/QCamera2/HAL3/QCamera3HWI.h"        |  22 +-
+ "camera/QCamera2/HAL3/QCamera3Hal.cpp"      |  39 +--
+ .../QCamera2/HAL3/QCamera3VendorTags.cpp"          | 271 +++++++++++++++
+ "camera/QCamera2/HAL3/QCamera3VendorTags.h" |  73 ++++
+ "camera/QCamera2/stack/common/cam_intf.h"   |   2 +
+ "camera/QCamera2/stack/common/cam_types.h"  |   4 +-
+ .../QCamera2/stack/mm-camera-interface/Android.mk" |   2 +-
+ .../stack/mm-camera-interface/inc/mm_camera.h"     |   2 +-
+ "camera/QCamera2/util/QCameraFlash.cpp"     | 380 +++++++++++++++++++++
+ "camera/QCamera2/util/QCameraFlash.h"       |  66 ++++
+ 14 files changed, 1072 insertions(+), 71 deletions(-)
+ create mode 100644 "camera/QCamera2/HAL3/QCamera3VendorTags.cpp"
+ create mode 100644 "camera/QCamera2/HAL3/QCamera3VendorTags.h"
+ create mode 100644 "camera/QCamera2/util/QCameraFlash.cpp"
+ create mode 100644 "camera/QCamera2/util/QCameraFlash.h"
+
+diff --git "a/camera/QCamera2/HAL3/Android.mk" "b/camera/QCamera2/HAL3/Android.mk"
+index 43a57d4..eddf64b 100644
+--- "a/camera/QCamera2/HAL3/Android.mk"
++++ "b/camera/QCamera2/HAL3/Android.mk"
+@@ -10,7 +10,9 @@ LOCAL_SRC_FILES := \
+         QCamera3Stream.cpp \
+         QCamera3Channel.cpp \
+         QCamera3PostProc.cpp \
++        QCamera3VendorTags.cpp \
+         ../util/QCameraCmdThread.cpp \
++        ../util/QCameraFlash.cpp \
+         ../util/QCameraQueue.cpp
+ 
+ LOCAL_CFLAGS := -Wall
+diff --git "a/camera/QCamera2/HAL3/QCamera3Factory.cpp" "b/camera/QCamera2/HAL3/QCamera3Factory.cpp"
+index 8094087..b5f0a88 100644
+--- "a/camera/QCamera2/HAL3/QCamera3Factory.cpp"
++++ "b/camera/QCamera2/HAL3/QCamera3Factory.cpp"
+@@ -1,4 +1,4 @@
+-/* Copyright (c) 2012-2013, The Linux Foundataion. All rights reserved.
++/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+@@ -34,13 +34,14 @@
+ #include <utils/Errors.h>
+ #include <hardware/camera3.h>
+ 
++#include "../util/QCameraFlash.h"
+ #include "QCamera3Factory.h"
+ 
+ using namespace android;
+ 
+ namespace qcamera {
+ 
+-QCamera3Factory gQCamera3Factory;
++QCamera3Factory *gQCamera3Factory = NULL;
+ 
+ /*===========================================================================
+  * FUNCTION   : QCamera3Factory
+@@ -53,7 +54,19 @@ QCamera3Factory gQCamera3Factory;
+  *==========================================================================*/
+ QCamera3Factory::QCamera3Factory()
+ {
++    camera_info info;
++
++    mCallbacks = NULL;
+     mNumOfCameras = get_num_of_cameras();
++
++    //Query camera at this point in order
++    //to avoid any delays during subsequent
++    //calls to 'getCameraInfo()'
++    for (int i = 0 ; i < mNumOfCameras ; i++) {
++        getCameraInfo(i, &info);
++    }
++    //
++
+ }
+ 
+ /*===========================================================================
+@@ -80,7 +93,7 @@ QCamera3Factory::~QCamera3Factory()
+  *==========================================================================*/
+ int QCamera3Factory::get_number_of_cameras()
+ {
+-    return gQCamera3Factory.getNumberOfCameras();
++    return gQCamera3Factory->getNumberOfCameras();
+ }
+ 
+ /*===========================================================================
+@@ -98,7 +111,60 @@ int QCamera3Factory::get_number_of_cameras()
+  *==========================================================================*/
+ int QCamera3Factory::get_camera_info(int camera_id, struct camera_info *info)
+ {
+-    return gQCamera3Factory.getCameraInfo(camera_id, info);
++    return gQCamera3Factory->getCameraInfo(camera_id, info);
++}
++
++
++/*===========================================================================
++ * FUNCTION   : set_callbacks
++ *
++ * DESCRIPTION: static function to set callbacks function to camera module
++ *
++ * PARAMETERS :
++ *   @callbacks : ptr to callback functions
++ *
++ * RETURN     : NO_ERROR  -- success
++ *              none-zero failure code
++ *==========================================================================*/
++int QCamera3Factory::set_callbacks(const camera_module_callbacks_t *callbacks)
++{
++    return gQCamera3Factory->setCallbacks(callbacks);
++}
++
++/*===========================================================================
++ * FUNCTION   : open_legacy
++ *
++ * DESCRIPTION: Function to open older hal version implementation
++ *
++ * PARAMETERS :
++ *   @hw_device : ptr to struct storing camera hardware device info
++ *   @camera_id : camera ID
++ *   @halVersion: Based on camera_module_t.common.module_api_version
++ *
++ * RETURN     : 0  -- success
++ *              none-zero failure code
++ *==========================================================================*/
++int QCamera3Factory::open_legacy(const struct hw_module_t* module,
++            const char* id, uint32_t halVersion, struct hw_device_t** device)
++{
++    return -ENOSYS;
++}
++
++/*===========================================================================
++ * FUNCTION   : set_torch_mode
++ *
++ * DESCRIPTION: Attempt to turn on or off the torch mode of the flash unit.
++ *
++ * PARAMETERS :
++ *   @camera_id : camera ID
++ *   @on        : Indicates whether to turn the flash on or off
++ *
++ * RETURN     : 0  -- success
++ *              none-zero failure code
++ *==========================================================================*/
++int QCamera3Factory::set_torch_mode(const char* camera_id, bool on)
++{
++    return gQCamera3Factory->setTorchMode(camera_id, on);
+ }
+ 
+ /*===========================================================================
+@@ -143,6 +209,33 @@ int QCamera3Factory::getCameraInfo(int camera_id, struct camera_info *info)
+     return rc;
+ }
+ 
++
++/*===========================================================================
++ * FUNCTION   : setCallbacks
++ *
++ * DESCRIPTION: set callback functions to send asynchronous notifications to
++ *              frameworks.
++ *
++ * PARAMETERS :
++ *   @callbacks : callback function pointer
++ *
++ * RETURN     :
++ *              NO_ERROR  -- success
++ *              none-zero failure code
++ *==========================================================================*/
++int QCamera3Factory::setCallbacks(const camera_module_callbacks_t *callbacks)
++{
++    int rc = NO_ERROR;
++    mCallbacks = callbacks;
++
++    rc = QCameraFlash::getInstance().registerCallbacks(callbacks);
++    if (rc != 0) {
++        ALOGE("%s : Failed to register callbacks with flash module!", __func__);
++    }
++
++    return rc;
++}
++
+ /*===========================================================================
+  * FUNCTION   : cameraDeviceOpen
+  *
+@@ -163,7 +256,8 @@ int QCamera3Factory::cameraDeviceOpen(int camera_id,
+     if (camera_id < 0 || camera_id >= mNumOfCameras)
+         return -ENODEV;
+ 
+-    QCamera3HardwareInterface *hw = new QCamera3HardwareInterface(camera_id);
++    QCamera3HardwareInterface *hw = new QCamera3HardwareInterface(
++            camera_id, mCallbacks);
+     if (!hw) {
+         ALOGE("Allocation of hardware interface failed");
+         return NO_MEMORY;
+@@ -201,12 +295,76 @@ int QCamera3Factory::camera_device_open(
+         ALOGE("Invalid camera id");
+         return BAD_VALUE;
+     }
+-    return gQCamera3Factory.cameraDeviceOpen(atoi(id), hw_device);
++    return gQCamera3Factory->cameraDeviceOpen(atoi(id), hw_device);
+ }
+ 
+ struct hw_module_methods_t QCamera3Factory::mModuleMethods = {
+-    open: QCamera3Factory::camera_device_open,
++    .open = QCamera3Factory::camera_device_open,
+ };
+ 
++/*===========================================================================
++ * FUNCTION   : setTorchMode
++ *
++ * DESCRIPTION: Attempt to turn on or off the torch mode of the flash unit.
++ *
++ * PARAMETERS :
++ *   @camera_id : camera ID
++ *   @on        : Indicates whether to turn the flash on or off
++ *
++ * RETURN     : 0  -- success
++ *              none-zero failure code
++ *==========================================================================*/
++int QCamera3Factory::setTorchMode(const char* camera_id, bool on)
++{
++    int retVal(0);
++    long cameraIdLong(-1);
++    int cameraIdInt(-1);
++    char* endPointer = NULL;
++    errno = 0;
++    QCameraFlash& flash = QCameraFlash::getInstance();
++
++    cameraIdLong = strtol(camera_id, &endPointer, 10);
++
++    if ((errno == ERANGE) ||
++            (cameraIdLong < 0) ||
++            (cameraIdLong >= static_cast<long>(get_number_of_cameras())) ||
++            (endPointer == camera_id) ||
++            (*endPointer != '\0')) {
++        retVal = -EINVAL;
++    } else if (on) {
++        cameraIdInt = static_cast<int>(cameraIdLong);
++        retVal = flash.initFlash(cameraIdInt);
++
++        if (retVal == 0) {
++            retVal = flash.setFlashMode(cameraIdInt, on);
++            if ((retVal == 0) && (mCallbacks != NULL)) {
++                mCallbacks->torch_mode_status_change(mCallbacks,
++                        camera_id,
++                        TORCH_MODE_STATUS_AVAILABLE_ON);
++            } else if (retVal == -EALREADY) {
++                // Flash is already on, so treat this as a success.
++                retVal = 0;
++            }
++        }
++    } else {
++        cameraIdInt = static_cast<int>(cameraIdLong);
++        retVal = flash.setFlashMode(cameraIdInt, on);
++
++        if (retVal == 0) {
++            retVal = flash.deinitFlash(cameraIdInt);
++            if ((retVal == 0) && (mCallbacks != NULL)) {
++                mCallbacks->torch_mode_status_change(mCallbacks,
++                        camera_id,
++                        TORCH_MODE_STATUS_AVAILABLE_OFF);
++            }
++        } else if (retVal == -EALREADY) {
++            // Flash is already off, so treat this as a success.
++            retVal = 0;
++        }
++    }
++
++    return retVal;
++}
++
+ }; // namespace qcamera
+ 
+diff --git "a/camera/QCamera2/HAL3/QCamera3Factory.h" "b/camera/QCamera2/HAL3/QCamera3Factory.h"
+index 9fe7762..ea9c662 100644
+--- "a/camera/QCamera2/HAL3/QCamera3Factory.h"
++++ "b/camera/QCamera2/HAL3/QCamera3Factory.h"
+@@ -44,19 +44,26 @@ class QCamera3Factory
+ 
+     static int get_number_of_cameras();
+     static int get_camera_info(int camera_id, struct camera_info *info);
++    static int set_callbacks(const camera_module_callbacks_t *callbacks);
++     static int open_legacy(const struct hw_module_t* module,
++              const char* id, uint32_t halVersion, struct hw_device_t** device);
++    static int set_torch_mode(const char* camera_id, bool on);
+ 
+ private:
+     int getNumberOfCameras();
+     int getCameraInfo(int camera_id, struct camera_info *info);
++    int setCallbacks(const camera_module_callbacks_t *callbacks);
+     int cameraDeviceOpen(int camera_id, struct hw_device_t **hw_device);
+     static int camera_device_open(const struct hw_module_t *module, const char *id,
+                 struct hw_device_t **hw_device);
++    int setTorchMode(const char* camera_id, bool on);
+ 
+ public:
+     static struct hw_module_methods_t mModuleMethods;
+ 
+ private:
+     int mNumOfCameras;
++    const camera_module_callbacks_t *mCallbacks;
+ };
+ 
+ }; /*namespace qcamera*/
+diff --git "a/camera/QCamera2/HAL3/QCamera3HWI.cpp" "b/camera/QCamera2/HAL3/QCamera3HWI.cpp"
+index 09b602c..707df72 100644
+--- "a/camera/QCamera2/HAL3/QCamera3HWI.cpp"
++++ "b/camera/QCamera2/HAL3/QCamera3HWI.cpp"
+@@ -37,10 +37,12 @@
+ #include <utils/Errors.h>
+ #include <ui/Fence.h>
+ #include <gralloc_priv.h>
++#include "../util/QCameraFlash.h"
+ #include "QCamera3HWI.h"
+ #include "QCamera3Mem.h"
+ #include "QCamera3Channel.h"
+ #include "QCamera3PostProc.h"
++#include "QCamera3VendorTags.h"
+ 
+ using namespace android;
+ 
+@@ -130,13 +132,14 @@ const int32_t available_thumbnail_sizes[] = {512, 288, 480, 288, 256, 154, 432,
+                                              320, 240, 176, 144, 0, 0};
+ 
+ camera3_device_ops_t QCamera3HardwareInterface::mCameraOps = {
+-    initialize:                         QCamera3HardwareInterface::initialize,
+-    configure_streams:                  QCamera3HardwareInterface::configure_streams,
+-    register_stream_buffers:            QCamera3HardwareInterface::register_stream_buffers,
+-    construct_default_request_settings: QCamera3HardwareInterface::construct_default_request_settings,
+-    process_capture_request:            QCamera3HardwareInterface::process_capture_request,
+-    get_metadata_vendor_tag_ops:        QCamera3HardwareInterface::get_metadata_vendor_tag_ops,
+-    dump:                               QCamera3HardwareInterface::dump,
++    .initialize =                         QCamera3HardwareInterface::initialize,
++    .configure_streams =                  QCamera3HardwareInterface::configure_streams,
++    .register_stream_buffers =            QCamera3HardwareInterface::register_stream_buffers,
++    .construct_default_request_settings = QCamera3HardwareInterface::construct_default_request_settings,
++    .process_capture_request =            QCamera3HardwareInterface::process_capture_request,
++    .get_metadata_vendor_tag_ops =        NULL,
++    .dump =                               QCamera3HardwareInterface::dump,
++    .reserved =                           {0},
+ };
+ 
+ 
+@@ -150,7 +153,8 @@ camera3_device_ops_t QCamera3HardwareInterface::mCameraOps = {
+  *
+  * RETURN     : none
+  *==========================================================================*/
+-QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId)
++QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId,
++                        const camera_module_callbacks_t *callbacks)
+     : mCameraId(cameraId),
+       mCameraHandle(NULL),
+       mCameraOpened(false),
+@@ -165,10 +169,11 @@ QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId)
+       mJpegSettings(NULL),
+       mIsZslMode(false),
+       m_pPowerModule(NULL),
+-      mPrecaptureId(0)
++      mPrecaptureId(0),
++      mCallbacks(callbacks)
+ {
+     mCameraDevice.common.tag = HARDWARE_DEVICE_TAG;
+-    mCameraDevice.common.version = CAMERA_DEVICE_API_VERSION_3_2;
++    mCameraDevice.common.version = CAMERA_DEVICE_API_VERSION_3_0;
+     mCameraDevice.common.close = close_camera_device;
+     mCameraDevice.ops = &mCameraOps;
+     mCameraDevice.priv = this;
+@@ -209,7 +214,7 @@ QCamera3HardwareInterface::~QCamera3HardwareInterface()
+         it != mStreamInfo.end(); it++) {
+         QCamera3Channel *channel = (QCamera3Channel *)(*it)->stream->priv;
+         if (channel)
+-           channel->stop();
++	           channel->stop();
+     }
+     for (List<stream_info_t *>::iterator it = mStreamInfo.begin();
+         it != mStreamInfo.end(); it++) {
+@@ -314,6 +319,16 @@ int QCamera3HardwareInterface::openCamera()
+         ALOGE("Failure: Camera already opened");
+         return ALREADY_EXISTS;
+     }
++
++
++    int rc = QCameraFlash::getInstance().reserveFlashForCamera(mCameraId);
++    if (rc < 0) {
++        ALOGE("%s: Failed to reserve flash for camera id: %d",
++                __func__,
++                mCameraId);
++        return UNKNOWN_ERROR;
++    }
++
+     mCameraHandle = camera_open(mCameraId);
+     if (!mCameraHandle) {
+         ALOGE("camera_open failed.");
+@@ -355,6 +370,12 @@ int QCamera3HardwareInterface::closeCamera()
+     }
+ #endif
+ 
++    if (QCameraFlash::getInstance().releaseFlashFromCamera(mCameraId) != 0) {
++        CDBG("%s: Failed to release flash for camera id: %d",
++                __func__,
++                mCameraId);
++    }
++
+     return rc;
+ }
+ 
+@@ -3443,34 +3464,6 @@ int QCamera3HardwareInterface::process_capture_request(
+     return rc;
+ }
+ 
+-/*===========================================================================
+- * FUNCTION   : get_metadata_vendor_tag_ops
+- *
+- * DESCRIPTION:
+- *
+- * PARAMETERS :
+- *
+- *
+- * RETURN     :
+- *==========================================================================*/
+-
+-void QCamera3HardwareInterface::get_metadata_vendor_tag_ops(
+-                const struct camera3_device *device,
+-                vendor_tag_query_ops_t* ops)
+-{
+-    ALOGV("%s: E", __func__);
+-    QCamera3HardwareInterface *hw =
+-        reinterpret_cast<QCamera3HardwareInterface *>(device->priv);
+-    if (!hw) {
+-        ALOGE("%s: NULL camera device", __func__);
+-        return;
+-    }
+-
+-    hw->getMetadataVendorTagOps(ops);
+-    ALOGV("%s: X", __func__);
+-    return;
+-}
+-
+ /*===========================================================================
+  * FUNCTION   : dump
+  *
+@@ -3690,6 +3683,36 @@ QCamera3ReprocessChannel *QCamera3HardwareInterface::addOnlineReprocChannel(
+     return pChannel;
+ }
+ 
++/*===========================================================================
++* FUNCTION   : getFlashInfo
++*
++* DESCRIPTION: Retrieve information about whether the device has a flash.
++*
++* PARAMETERS :
++*   @cameraId  : Camera id to query
++*   @hasFlash  : Boolean indicating whether there is a flash device
++*                associated with given camera
++*   @flashNode : If a flash device exists, this will be its device node.
++*
++* RETURN     :
++*   None
++*==========================================================================*/
++void QCamera3HardwareInterface::getFlashInfo(const int cameraId,
++        bool& hasFlash,
++        char (&flashNode)[QCAMERA_MAX_FILEPATH_LENGTH])
++{
++    cam_capability_t* camCapability = gCamCapability[cameraId];
++    if (NULL == camCapability) {
++        hasFlash = false;
++        flashNode[0] = '\0';
++    } else {
++        hasFlash = camCapability->flash_available;
++        strlcpy(flashNode,
++                (char*)camCapability->flash_dev_name,
++                QCAMERA_MAX_FILEPATH_LENGTH);
++    }
++}
++
+ int QCamera3HardwareInterface::getMaxUnmatchedFramesInQueue()
+ {
+     return gCamCapability[mCameraId]->min_num_pp_bufs;
+diff --git "a/camera/QCamera2/HAL3/QCamera3HWI.h" "b/camera/QCamera2/HAL3/QCamera3HWI.h"
+index 71baf9e..5db6f3a 100644
+--- "a/camera/QCamera2/HAL3/QCamera3HWI.h"
++++ "b/camera/QCamera2/HAL3/QCamera3HWI.h"
+@@ -45,6 +45,17 @@ extern "C" {
+ #include <mm_jpeg_interface.h>
+ }
+ 
++
++#ifdef CDBG
++#undef CDBG
++#endif //#ifdef CDBG
++#define CDBG(fmt, args...) ALOGV(fmt, ##args)
++
++#ifdef CDBG_HIGH
++#undef CDBG_HIGH
++#endif //#ifdef CDBG_HIGH
++#define CDBG_HIGH(fmt, args...) ALOGD(fmt, ##args)
++
+ using namespace android;
+ 
+ namespace qcamera {
+@@ -82,12 +93,11 @@ class QCamera3HardwareInterface {
+                                 const struct camera3_device *, int type);
+     static int process_capture_request(const struct camera3_device *,
+                                 camera3_capture_request_t *request);
+-    static void get_metadata_vendor_tag_ops(const struct camera3_device *,
+-                                               vendor_tag_query_ops_t* ops);
+     static void dump(const struct camera3_device *, int fd);
+     static int close_camera_device(struct hw_device_t* device);
+ public:
+-    QCamera3HardwareInterface(int cameraId);
++    QCamera3HardwareInterface(int cameraId,
++            const camera_module_callbacks_t *callbacks);
+     virtual ~QCamera3HardwareInterface();
+     int openCamera(struct hw_device_t **hw_device);
+     int getMetadata(int type);
+@@ -168,6 +178,10 @@ class QCamera3HardwareInterface {
+     int getJpegQuality();
+     int calcMaxJpegSize();
+     QCamera3Exif *getExifData();
++    static void getFlashInfo(const int cameraId,
++            bool& hasFlash,
++            char (&flashNode)[QCAMERA_MAX_FILEPATH_LENGTH]);
++
+ private:
+     camera3_device_t   mCameraDevice;
+     uint8_t            mCameraId;
+@@ -222,6 +236,8 @@ class QCamera3HardwareInterface {
+ 
+     int32_t mPrecaptureId;
+ 
++    const camera_module_callbacks_t *mCallbacks;
++
+     static const QCameraMap EFFECT_MODES_MAP[];
+     static const QCameraMap WHITE_BALANCE_MODES_MAP[];
+     static const QCameraMap SCENE_MODES_MAP[];
+diff --git "a/camera/QCamera2/HAL3/QCamera3Hal.cpp" "b/camera/QCamera2/HAL3/QCamera3Hal.cpp"
+index eff72ff..0713b0e 100644
+--- "a/camera/QCamera2/HAL3/QCamera3Hal.cpp"
++++ "b/camera/QCamera2/HAL3/QCamera3Hal.cpp"
+@@ -1,4 +1,4 @@
+-/* Copyright (c) 2012-2013, The Linux Foundataion. All rights reserved.
++/* Copyright (c) 2012-2015, The Linux Foundataion. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+@@ -28,27 +28,28 @@
+ */
+ 
+ #include "QCamera3Factory.h"
++#include "QCamera3VendorTags.h"
+ 
+ static hw_module_t camera_common = {
+-    tag: HARDWARE_MODULE_TAG,
+-    module_api_version: CAMERA_MODULE_API_VERSION_2_0,
+-    hal_api_version: HARDWARE_HAL_API_VERSION,
+-    id: CAMERA_HARDWARE_MODULE_ID,
+-    name: "QCamera Module",
+-    author: "Qualcomm Innovation Center Inc",
+-    methods: &qcamera::QCamera3Factory::mModuleMethods,
+-    dso: NULL,
+-    reserved:  {0},
++    .tag = HARDWARE_MODULE_TAG,
++    .module_api_version = CAMERA_MODULE_API_VERSION_2_4,
++    .hal_api_version = HARDWARE_HAL_API_VERSION,
++    .id = CAMERA_HARDWARE_MODULE_ID,
++    .name = "QCamera Module",
++    .author = "Qualcomm Innovation Center Inc",
++    .methods = &qcamera::QCamera3Factory::mModuleMethods,
++    .dso = NULL,
++    .reserved = {0},
+ };
+ 
+ camera_module_t HAL_MODULE_INFO_SYM = {
+-    common: camera_common,
+-    get_number_of_cameras: qcamera::QCamera3Factory::get_number_of_cameras,
+-    get_camera_info: qcamera::QCamera3Factory::get_camera_info,
+-    set_callbacks: NULL,
+-    get_vendor_tag_ops: NULL,
+-    open_legacy: NULL,
+-    set_torch_mode: NULL,
+-    init: NULL,
+-    reserved: {0}
++    .common = camera_common,
++    .get_number_of_cameras = qcamera::QCamera3Factory::get_number_of_cameras,
++    .get_camera_info = qcamera::QCamera3Factory::get_camera_info,
++    .set_callbacks = qcamera::QCamera3Factory::set_callbacks,
++    .get_vendor_tag_ops = qcamera::QCamera3VendorTags::get_vendor_tag_ops,
++    .open_legacy = qcamera::QCamera3Factory::open_legacy,
++    .set_torch_mode = qcamera::QCamera3Factory::set_torch_mode,
++    .init = NULL,
++    .reserved = {0}
+ };
+diff --git "a/camera/QCamera2/HAL3/QCamera3VendorTags.cpp" "b/camera/QCamera2/HAL3/QCamera3VendorTags.cpp"
+new file mode 100644
+index 0000000..63696bc
+--- /dev/null
++++ "b/camera/QCamera2/HAL3/QCamera3VendorTags.cpp"
+@@ -0,0 +1,271 @@
++/* Copyright (c) 2014, The Linux Foundataion. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*     * Redistributions of source code must retain the above copyright
++*       notice, this list of conditions and the following disclaimer.
++*     * Redistributions in binary form must reproduce the above
++*       copyright notice, this list of conditions and the following
++*       disclaimer in the documentation and/or other materials provided
++*       with the distribution.
++*     * Neither the name of The Linux Foundation nor the names of its
++*       contributors may be used to endorse or promote products derived
++*       from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++*/
++
++#define LOG_TAG "QCamera3VendorTags"
++//#define LOG_NDEBUG 0
++
++#include <hardware/camera3.h>
++#include <utils/Log.h>
++#include <utils/Errors.h>
++#include "QCamera3VendorTags.h"
++
++using namespace android;
++
++namespace qcamera {
++
++const int QCAMERA3_SECTION_COUNT = QCAMERA3_SECTIONS_END - VENDOR_SECTION;
++
++enum qcamera3_ext_tags qcamera3_ext3_section_bounds[QCAMERA3_SECTIONS_END -
++    VENDOR_SECTION] = {
++        QCAMERA3_PRIVATEDATA_END
++} ;
++
++typedef struct vendor_tag_info {
++    const char *tag_name;
++    uint8_t     tag_type;
++} vendor_tag_info_t;
++
++const char *qcamera3_ext_section_names[QCAMERA3_SECTIONS_END -
++        VENDOR_SECTION] = {
++    "org.codeaurora.qcamera3.privatedata"
++};
++
++vendor_tag_info_t qcamera3_privatedata[QCAMERA3_PRIVATEDATA_END - QCAMERA3_PRIVATEDATA_START] = {
++    { "privatedata", TYPE_BYTE }
++};
++
++vendor_tag_info_t *qcamera3_tag_info[QCAMERA3_SECTIONS_END -
++        VENDOR_SECTION] = {
++    qcamera3_privatedata
++};
++
++uint32_t qcamera3_all_tags[] = {
++    // QCAMERA3_PRIVATEDATA
++    (uint32_t)QCAMERA3_PRIVATEDATA_REPROCESS
++};
++
++const vendor_tag_ops_t* QCamera3VendorTags::Ops = NULL;
++
++/*===========================================================================
++ * FUNCTION   : get_vendor_tag_ops
++ *
++ * DESCRIPTION: Get the metadata vendor tag function pointers
++ *
++ * PARAMETERS :
++ *    @ops   : function pointer table to be filled by HAL
++ *
++ *
++ * RETURN     : NONE
++ *==========================================================================*/
++void QCamera3VendorTags::get_vendor_tag_ops(
++                                vendor_tag_ops_t* ops)
++{
++    ALOGV("%s: E", __func__);
++
++    Ops = ops;
++
++    ops->get_tag_count = get_tag_count;
++    ops->get_all_tags = get_all_tags;
++    ops->get_section_name = get_section_name;
++    ops->get_tag_name = get_tag_name;
++    ops->get_tag_type = get_tag_type;
++    ops->reserved[0] = NULL;
++
++    ALOGV("%s: X", __func__);
++    return;
++}
++
++/*===========================================================================
++ * FUNCTION   : get_tag_count
++ *
++ * DESCRIPTION: Get number of vendor tags supported
++ *
++ * PARAMETERS :
++ *    @ops   :  Vendor tag ops data structure
++ *
++ *
++ * RETURN     : Number of vendor tags supported
++ *==========================================================================*/
++
++int QCamera3VendorTags::get_tag_count(
++                const vendor_tag_ops_t * ops)
++{
++    int count = 0;
++    if (ops == Ops)
++        count = sizeof(qcamera3_all_tags)/sizeof(qcamera3_all_tags[0]);
++
++    ALOGV("%s: count is %d", __func__, count);
++    return count;
++}
++
++/*===========================================================================
++ * FUNCTION   : get_all_tags
++ *
++ * DESCRIPTION: Fill array with all supported vendor tags
++ *
++ * PARAMETERS :
++ *    @ops      :  Vendor tag ops data structure
++ *    @tag_array:  array of metadata tags
++ *
++ * RETURN     : Success: the section name of the specific tag
++ *              Failure: NULL
++ *==========================================================================*/
++void QCamera3VendorTags::get_all_tags(
++                const vendor_tag_ops_t * ops,
++                uint32_t *g_array)
++{
++    if (ops != Ops)
++        return;
++
++    for (size_t i = 0;
++            i < sizeof(qcamera3_all_tags)/sizeof(qcamera3_all_tags[0]);
++            i++) {
++        g_array[i] = qcamera3_all_tags[i];
++	ALOGV("%s: g_array[%d] is %d", __func__, i, g_array[i]);
++    }
++}
++
++/*===========================================================================
++ * FUNCTION   : get_section_name
++ *
++ * DESCRIPTION: Get section name for vendor tag
++ *
++ * PARAMETERS :
++ *    @ops   :  Vendor tag ops structure
++ *    @tag   :  Vendor specific tag
++ *
++ *
++ * RETURN     : Success: the section name of the specific tag
++ *              Failure: NULL
++ *==========================================================================*/
++
++const char* QCamera3VendorTags::get_section_name(
++                const vendor_tag_ops_t * ops,
++                uint32_t tag)
++{
++    ALOGV("%s: E", __func__);
++    if (ops != Ops)
++        return NULL;
++
++    const char *ret;
++    uint32_t section = tag >> 16;
++
++    if (section < VENDOR_SECTION || section > QCAMERA3_SECTIONS_END)
++        ret = NULL;
++    else
++        ret = qcamera3_ext_section_names[section - VENDOR_SECTION];
++
++    if (ret)
++        ALOGV("%s: section_name[%d] is %s", __func__, tag, ret);
++    ALOGV("%s: X", __func__);
++    return ret;
++}
++
++/*===========================================================================
++ * FUNCTION   : get_tag_name
++ *
++ * DESCRIPTION: Get name of a vendor specific tag
++ *
++ * PARAMETERS :
++ *    @tag   :  Vendor specific tag
++ *
++ *
++ * RETURN     : Success: the name of the specific tag
++ *              Failure: NULL
++ *==========================================================================*/
++const char* QCamera3VendorTags::get_tag_name(
++                const vendor_tag_ops_t * ops,
++                uint32_t tag)
++{
++    ALOGV("%s: E", __func__);
++    const char *ret;
++    uint32_t section = tag >> 16;
++    uint32_t section_index = section - VENDOR_SECTION;
++    uint32_t tag_index = tag & 0xFFFF;
++
++    if (ops != Ops) {
++        ret = NULL;
++        goto done;
++    }
++
++    if (section < VENDOR_SECTION || section > QCAMERA3_SECTIONS_END)
++        ret = NULL;
++    else if (tag >= (uint32_t)qcamera3_ext3_section_bounds[section_index])
++        ret = NULL;
++    else
++        ret = qcamera3_tag_info[section_index][tag_index].tag_name;
++
++    if (ret)
++        ALOGV("%s: tag name for tag %d is %s", __func__, tag, ret);
++    ALOGV("%s: X", __func__);
++
++done:
++    return ret;
++}
++
++/*===========================================================================
++ * FUNCTION   : get_tag_type
++ *
++ * DESCRIPTION: Get type of a vendor specific tag
++ *
++ * PARAMETERS :
++ *    @tag   :  Vendor specific tag
++ *
++ *
++ * RETURN     : Success: the type of the specific tag
++ *              Failure: -1
++ *==========================================================================*/
++int QCamera3VendorTags::get_tag_type(
++                const vendor_tag_ops_t *ops,
++                uint32_t tag)
++{
++    ALOGV("%s: E", __func__);
++    int ret;
++    uint32_t section = tag >> 16;
++    uint32_t section_index = section - VENDOR_SECTION;
++    uint32_t tag_index = tag & 0xFFFF;
++
++    if (ops != Ops) {
++        ret = -1;
++        goto done;
++    }
++    if (section < VENDOR_SECTION || section > QCAMERA3_SECTIONS_END)
++        ret = -1;
++    else if (tag >= (uint32_t )qcamera3_ext3_section_bounds[section_index])
++        ret = -1;
++    else
++        ret = qcamera3_tag_info[section_index][tag_index].tag_type;
++
++    ALOGV("%s: tag type for tag %d is %d", __func__, tag, ret);
++    ALOGV("%s: X", __func__);
++done:
++    return ret;
++}
++
++}; //end namespace qcamera
+diff --git "a/camera/QCamera2/HAL3/QCamera3VendorTags.h" "b/camera/QCamera2/HAL3/QCamera3VendorTags.h"
+new file mode 100644
+index 0000000..a520b99
+--- /dev/null
++++ "b/camera/QCamera2/HAL3/QCamera3VendorTags.h"
+@@ -0,0 +1,73 @@
++/* Copyright (c) 2014, The Linux Foundataion. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*     * Redistributions of source code must retain the above copyright
++*       notice, this list of conditions and the following disclaimer.
++*     * Redistributions in binary form must reproduce the above
++*       copyright notice, this list of conditions and the following
++*       disclaimer in the documentation and/or other materials provided
++*       with the distribution.
++*     * Neither the name of The Linux Foundation nor the names of its
++*       contributors may be used to endorse or promote products derived
++*       from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++*/
++
++#ifndef __QCAMERA3VENDORTAGS_H__
++#define __QCAMERA3VENDORTAGS_H__
++
++namespace qcamera {
++
++enum qcamera3_ext_section {
++    QCAMERA3_PRIVATEDATA = VENDOR_SECTION,
++    QCAMERA3_SECTIONS_END
++};
++
++enum qcamera3_ext_section_ranges {
++    QCAMERA3_PRIVATEDATA_START = QCAMERA3_PRIVATEDATA << 16
++};
++
++enum qcamera3_ext_tags {
++    QCAMERA3_PRIVATEDATA_REPROCESS = QCAMERA3_PRIVATEDATA_START,
++    QCAMERA3_PRIVATEDATA_END
++};
++
++class QCamera3VendorTags {
++
++public:
++    static void get_vendor_tag_ops(vendor_tag_ops_t* ops);
++    static int get_tag_count(
++            const vendor_tag_ops_t *ops);
++    static void get_all_tags(
++            const vendor_tag_ops_t *ops,
++            uint32_t *tag_array);
++    static const char* get_section_name(
++            const vendor_tag_ops_t *ops,
++            uint32_t tag);
++    static const char* get_tag_name(
++            const vendor_tag_ops_t *ops,
++            uint32_t tag);
++    static int get_tag_type(
++            const vendor_tag_ops_t *ops,
++            uint32_t tag);
++
++    static const vendor_tag_ops_t *Ops;
++};
++
++}; // namespace qcamera
++
++#endif /* __QCAMERA3VENDORTAGS_H__ */
+diff --git "a/camera/QCamera2/stack/common/cam_intf.h" "b/camera/QCamera2/stack/common/cam_intf.h"
+index cf1b98b..40de4b5 100644
+--- "a/camera/QCamera2/stack/common/cam_intf.h"
++++ "b/camera/QCamera2/stack/common/cam_intf.h"
+@@ -292,6 +292,8 @@ typedef struct{
+     uint8_t flash_available;
+ 
+     cam_rational_type_t base_gain_factor;    /* sensor base gain factor */
++
++    uint8_t flash_dev_name[QCAMERA_MAX_FILEPATH_LENGTH];
+ } cam_capability_t;
+ 
+ typedef enum {
+diff --git "a/camera/QCamera2/stack/common/cam_types.h" "b/camera/QCamera2/stack/common/cam_types.h"
+index a1a97fa..1cb5d1e 100644
+--- "a/camera/QCamera2/stack/common/cam_types.h"
++++ "b/camera/QCamera2/stack/common/cam_types.h"
+@@ -1,4 +1,4 @@
+-/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
++/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are
+@@ -51,6 +51,8 @@
+ #define MAX_STREAM_NUM_IN_BUNDLE 4
+ #define MAX_NUM_STREAMS          8
+ 
++#define QCAMERA_MAX_FILEPATH_LENGTH 64
++
+ typedef enum {
+     CAM_HAL_V1 = 1,
+     CAM_HAL_V3 = 3
+diff --git "a/camera/QCamera2/stack/mm-camera-interface/Android.mk" "b/camera/QCamera2/stack/mm-camera-interface/Android.mk"
+index 14d49d6..82dca6f 100644
+--- "a/camera/QCamera2/stack/mm-camera-interface/Android.mk"
++++ "b/camera/QCamera2/stack/mm-camera-interface/Android.mk"
+@@ -28,7 +28,7 @@ LOCAL_C_INCLUDES := \
+     $(LOCAL_PATH)/inc \
+     $(LOCAL_PATH)/../common
+ 
+-LOCAL_C_INCLUDES += hardware/qcom/media/mm-core/inc
++LOCAL_C_INCLUDES += hardware/qcom/media/msm8974/mm-core/inc
+ 
+ LOCAL_CFLAGS += -Wall -Werror
+ 
+diff --git "a/camera/QCamera2/stack/mm-camera-interface/inc/mm_camera.h" "b/camera/QCamera2/stack/mm-camera-interface/inc/mm_camera.h"
+index 52e6c24..998049e 100644
+--- "a/camera/QCamera2/stack/mm-camera-interface/inc/mm_camera.h"
++++ "b/camera/QCamera2/stack/mm-camera-interface/inc/mm_camera.h"
+@@ -45,7 +45,7 @@
+ #define MM_CAMERA_CHANNEL_POLL_THREAD_MAX 1
+ 
+ #define MM_CAMERA_DEV_NAME_LEN 32
+-#define MM_CAMERA_DEV_OPEN_TRIES 2
++#define MM_CAMERA_DEV_OPEN_TRIES 30
+ #define MM_CAMERA_DEV_OPEN_RETRY_SLEEP 20
+ 
+ #ifndef TRUE
+diff --git "a/camera/QCamera2/util/QCameraFlash.cpp" "b/camera/QCamera2/util/QCameraFlash.cpp"
+new file mode 100644
+index 0000000..0e4525d
+--- /dev/null
++++ "b/camera/QCamera2/util/QCameraFlash.cpp"
+@@ -0,0 +1,380 @@
++/* Copyright (c) 2015, The Linux Foundataion. All rights reserved.
++*
++* Redistribution and use in source and binary forms, with or without
++* modification, are permitted provided that the following conditions are
++* met:
++*     * Redistributions of source code must retain the above copyright
++*       notice, this list of conditions and the following disclaimer.
++*     * Redistributions in binary form must reproduce the above
++*       copyright notice, this list of conditions and the following
++*       disclaimer in the documentation and/or other materials provided
++*       with the distribution.
++*     * Neither the name of The Linux Foundation nor the names of its
++*       contributors may be used to endorse or promote products derived
++*       from this software without specific prior written permission.
++*
++* THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++* ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*
++*/
++
++#include <stdio.h>
++#include <fcntl.h>
++#include <linux/media.h>
++#include <media/msmb_camera.h>
++#include <media/msm_cam_sensor.h>
++#include <utils/Log.h>
++
++#include "../HAL3/QCamera3HWI.h"
++#include "QCameraFlash.h"
++
++#define STRING_LENGTH_OF_64_BIT_NUMBER 21
++
++volatile uint32_t gCamHal3LogLevel = 1;
++
++namespace qcamera {
++
++/*===========================================================================
++ * FUNCTION   : getInstance
++ *
++ * DESCRIPTION: Get and create the QCameraFlash singleton.
++ *
++ * PARAMETERS : None
++ *
++ * RETURN     : None
++ *==========================================================================*/
++QCameraFlash& QCameraFlash::getInstance()
++{
++    static QCameraFlash flashInstance;
++    return flashInstance;
++}
++
++/*===========================================================================
++ * FUNCTION   : QCameraFlash
++ *
++ * DESCRIPTION: default constructor of QCameraFlash
++ *
++ * PARAMETERS : None
++ *
++ * RETURN     : None
++ *==========================================================================*/
++QCameraFlash::QCameraFlash() : m_callbacks(NULL)
++{
++    memset(&m_flashOn, 0, sizeof(m_flashOn));
++    memset(&m_cameraOpen, 0, sizeof(m_cameraOpen));
++    for (int pos = 0; pos < MM_CAMERA_MAX_NUM_SENSORS; pos++) {
++        m_flashFds[pos] = -1;
++    }
++}
++
++/*===========================================================================
++ * FUNCTION   : ~QCameraFlash
++ *
++ * DESCRIPTION: deconstructor of QCameraFlash
++ *
++ * PARAMETERS : None
++ *
++ * RETURN     : None
++ *==========================================================================*/
++QCameraFlash::~QCameraFlash()
++{
++    for (int pos = 0; pos < MM_CAMERA_MAX_NUM_SENSORS; pos++) {
++        if (m_flashFds[pos] >= 0)
++            {
++                setFlashMode(pos, false);
++                close(m_flashFds[pos]);
++                m_flashFds[pos] = -1;
++            }
++    }
++}
++
++/*===========================================================================
++ * FUNCTION   : registerCallbacks
++ *
++ * DESCRIPTION: provide flash module with reference to callbacks to framework
++ *
++ * PARAMETERS : None
++ *
++ * RETURN     : None
++ *==========================================================================*/
++int32_t QCameraFlash::registerCallbacks(
++        const camera_module_callbacks_t* callbacks)
++{
++    int32_t retVal = 0;
++    m_callbacks = callbacks;
++    return retVal;
++}
++
++/*===========================================================================
++ * FUNCTION   : initFlash
++ *
++ * DESCRIPTION: Reserve and initialize the flash unit associated with a
++ *              given camera id. This function is blocking until the
++ *              operation completes or fails. Each flash unit can be "inited"
++ *              by only one process at a time.
++ *
++ * PARAMETERS :
++ *   @camera_id : Camera id of the flash.
++ *
++ * RETURN     :
++ *   0        : success
++ *   -EBUSY   : The flash unit or the resource needed to turn on the
++ *              the flash is busy, typically because the flash is
++ *              already in use.
++ *   -EINVAL  : No flash present at camera_id.
++ *==========================================================================*/
++int32_t QCameraFlash::initFlash(const int camera_id)
++{
++    int32_t retVal = 0;
++    bool hasFlash = false;
++    char flashNode[QCAMERA_MAX_FILEPATH_LENGTH];
++    char flashPath[QCAMERA_MAX_FILEPATH_LENGTH] = "/dev/";
++
++    if (camera_id < 0 || camera_id >= MM_CAMERA_MAX_NUM_SENSORS) {
++        ALOGE("%s: Invalid camera id: %d", __func__, camera_id);
++        return -EINVAL;
++    }
++
++    QCamera3HardwareInterface::getFlashInfo(camera_id,
++            hasFlash,
++            flashNode);
++
++    strlcat(flashPath,
++            flashNode,
++            sizeof(flashPath));
++
++    if (!hasFlash) {
++        ALOGE("%s: No flash available for camera id: %d",
++                __func__,
++                camera_id);
++        retVal = -EINVAL;
++    } else if (m_cameraOpen[camera_id]) {
++        ALOGE("%s: Camera in use for camera id: %d",
++                __func__,
++                camera_id);
++        retVal = -EBUSY;
++    } else if (m_flashFds[camera_id] >= 0) {
++        CDBG("%s: Flash is already inited for camera id: %d",
++                __func__,
++                camera_id);
++    } else {
++        m_flashFds[camera_id] = open(flashPath, O_RDWR | O_NONBLOCK);
++
++        if (m_flashFds[camera_id] < 0) {
++            ALOGE("%s: Unable to open node '%s'",
++                    __func__,
++                    flashPath);
++            retVal = -EBUSY;
++        } else {
++            struct msm_camera_led_cfg_t cfg;
++            cfg.cfgtype = MSM_CAMERA_LED_INIT;
++            retVal = ioctl(m_flashFds[camera_id],
++                    VIDIOC_MSM_FLASH_LED_DATA_CFG,
++                    &cfg);
++            if (retVal < 0) {
++                ALOGE("%s: Unable to init flash for camera id: %d",
++                        __func__,
++                        camera_id);
++                close(m_flashFds[camera_id]);
++                m_flashFds[camera_id] = -1;
++            }
++        }
++    }
++
++    return retVal;
++}
++
++/*===========================================================================
++ * FUNCTION   : setFlashMode
++ *
++ * DESCRIPTION: Turn on or off the flash associated with a given handle.
++ *              This function is blocking until the operation completes or
++ *              fails.
++ *
++ * PARAMETERS :
++ *   @camera_id  : Camera id of the flash
++ *   @on         : Whether to turn flash on (true) or off (false)
++ *
++ * RETURN     :
++ *   0        : success
++ *   -EINVAL  : No camera present at camera_id, or it is not inited.
++ *   -EALREADY: Flash is already in requested state
++ *==========================================================================*/
++int32_t QCameraFlash::setFlashMode(const int camera_id, const bool mode)
++{
++    int32_t retVal = 0;
++    struct msm_camera_led_cfg_t cfg;
++
++    if (camera_id < 0 || camera_id >= MM_CAMERA_MAX_NUM_SENSORS) {
++        ALOGE("%s: Invalid camera id: %d", __func__, camera_id);
++        retVal = -EINVAL;
++    } else if (mode == m_flashOn[camera_id]) {
++        CDBG("%s: flash %d is already in requested state: %d",
++                __func__,
++                camera_id,
++                mode);
++        retVal = -EALREADY;
++    } else if (m_flashFds[camera_id] < 0) {
++        ALOGE("%s: called for uninited flash: %d", __func__, camera_id);
++        retVal = -EINVAL;
++    }  else {
++        cfg.cfgtype = mode ? MSM_CAMERA_LED_LOW : MSM_CAMERA_LED_OFF;
++        retVal = ioctl(m_flashFds[camera_id],
++                VIDIOC_MSM_FLASH_LED_DATA_CFG,
++                &cfg);
++        if (retVal == 0) {
++            m_flashOn[camera_id] = mode;
++        }
++    }
++    return retVal;
++}
++
++/*===========================================================================
++ * FUNCTION   : deinitFlash
++ *
++ * DESCRIPTION: Release the flash unit associated with a given camera
++ *              position. This function is blocking until the operation
++ *              completes or fails.
++ *
++ * PARAMETERS :
++ *   @camera_id : Camera id of the flash.
++ *
++ * RETURN     :
++ *   0        : success
++ *   -EINVAL  : No camera present at camera_id or not inited.
++ *==========================================================================*/
++int32_t QCameraFlash::deinitFlash(const int camera_id)
++{
++    int32_t retVal = 0;
++
++    if (camera_id < 0 || camera_id >= MM_CAMERA_MAX_NUM_SENSORS) {
++        ALOGE("%s: Invalid camera id: %d", __func__, camera_id);
++        retVal = -EINVAL;
++    } else if (m_flashFds[camera_id] < 0) {
++        ALOGE("%s: called deinitFlash for uninited flash", __func__);
++        retVal = -EINVAL;
++    } else {
++        setFlashMode(camera_id, false);
++
++        struct msm_camera_led_cfg_t cfg;
++        cfg.cfgtype = MSM_CAMERA_LED_RELEASE;
++        retVal = ioctl(m_flashFds[camera_id],
++                VIDIOC_MSM_FLASH_LED_DATA_CFG,
++                &cfg);
++        if (retVal < 0) {
++            ALOGE("%s: Failed to release flash for camera id: %d",
++                    __func__,
++                    camera_id);
++        }
++
++        close(m_flashFds[camera_id]);
++        m_flashFds[camera_id] = -1;
++    }
++
++    return retVal;
++}
++
++/*===========================================================================
++ * FUNCTION   : reserveFlashForCamera
++ *
++ * DESCRIPTION: Give control of the flash to the camera, and notify
++ *              framework that the flash has become unavailable.
++ *
++ * PARAMETERS :
++ *   @camera_id : Camera id of the flash.
++ *
++ * RETURN     :
++ *   0        : success
++ *   -EINVAL  : No camera present at camera_id or not inited.
++ *   -ENOSYS  : No callback available for torch_mode_status_change.
++ *==========================================================================*/
++int32_t QCameraFlash::reserveFlashForCamera(const int camera_id)
++{
++    int32_t retVal = 0;
++
++    if (camera_id < 0 || camera_id >= MM_CAMERA_MAX_NUM_SENSORS) {
++        ALOGE("%s: Invalid camera id: %d", __func__, camera_id);
++        retVal = -EINVAL;
++    } else if (m_cameraOpen[camera_id]) {
++        CDBG("%s: Flash already reserved for camera id: %d",
++                __func__,
++                camera_id);
++    } else {
++        if (m_flashOn[camera_id]) {
++            setFlashMode(camera_id, false);
++            deinitFlash(camera_id);
++        }
++        m_cameraOpen[camera_id] = true;
++
++        if (m_callbacks == NULL ||
++                m_callbacks->torch_mode_status_change == NULL) {
++            ALOGE("%s: Callback is not defined!", __func__);
++            retVal = -ENOSYS;
++        } else {
++            char cameraIdStr[STRING_LENGTH_OF_64_BIT_NUMBER];
++            snprintf(cameraIdStr, STRING_LENGTH_OF_64_BIT_NUMBER,
++                    "%d", camera_id);
++            m_callbacks->torch_mode_status_change(m_callbacks,
++                    cameraIdStr,
++                    TORCH_MODE_STATUS_NOT_AVAILABLE);
++        }
++    }
++
++    return retVal;
++}
++
++/*===========================================================================
++ * FUNCTION   : releaseFlashFromCamera
++ *
++ * DESCRIPTION: Release control of the flash from the camera, and notify
++ *              framework that the flash has become available.
++ *
++ * PARAMETERS :
++ *   @camera_id : Camera id of the flash.
++ *
++ * RETURN     :
++ *   0        : success
++ *   -EINVAL  : No camera present at camera_id or not inited.
++ *   -ENOSYS  : No callback available for torch_mode_status_change.
++ *==========================================================================*/
++int32_t QCameraFlash::releaseFlashFromCamera(const int camera_id)
++{
++    int32_t retVal = 0;
++
++    if (camera_id < 0 || camera_id >= MM_CAMERA_MAX_NUM_SENSORS) {
++        ALOGE("%s: Invalid camera id: %d", __func__, camera_id);
++        retVal = -EINVAL;
++    } else if (!m_cameraOpen[camera_id]) {
++        CDBG("%s: Flash not reserved for camera id: %d",
++                __func__,
++                camera_id);
++    } else {
++        m_cameraOpen[camera_id] = false;
++
++        if (m_callbacks == NULL ||
++                m_callbacks->torch_mode_status_change == NULL) {
++            ALOGE("%s: Callback is not defined!", __func__);
++            retVal = -ENOSYS;
++        } else {
++            char cameraIdStr[STRING_LENGTH_OF_64_BIT_NUMBER];
++            snprintf(cameraIdStr, STRING_LENGTH_OF_64_BIT_NUMBER,
++                    "%d", camera_id);
++            m_callbacks->torch_mode_status_change(m_callbacks,
++                    cameraIdStr,
++                    TORCH_MODE_STATUS_AVAILABLE_OFF);
++        }
++    }
++
++    return retVal;
++}
++
++}; // namespace qcamera
+diff --git "a/camera/QCamera2/util/QCameraFlash.h" "b/camera/QCamera2/util/QCameraFlash.h"
+new file mode 100644
+index 0000000..f86b6ee
+--- /dev/null
++++ "b/camera/QCamera2/util/QCameraFlash.h"
+@@ -0,0 +1,66 @@
++/* Copyright (c) 2015, The Linux Foundataion. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are
++ * met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above
++ *       copyright notice, this list of conditions and the following
++ *       disclaimer in the documentation and/or other materials provided
++ *       with the distribution.
++ *     * Neither the name of The Linux Foundation nor the names of its
++ *       contributors may be used to endorse or promote products derived
++ *       from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
++ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
++ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
++ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
++ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
++ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++#ifndef __QCAMERA_FLASH_H__
++#define __QCAMERA_FLASH_H__
++
++#include <hardware/camera_common.h>
++
++extern "C" {
++#include <mm_camera_interface.h>
++}
++
++namespace qcamera {
++
++class QCameraFlash {
++public:
++    static QCameraFlash& getInstance();
++
++    int32_t registerCallbacks(const camera_module_callbacks_t* callbacks);
++    int32_t initFlash(const int camera_id);
++    int32_t setFlashMode(const int camera_id, const bool on);
++    int32_t deinitFlash(const int camera_id);
++    int32_t reserveFlashForCamera(const int camera_id);
++    int32_t releaseFlashFromCamera(const int camera_id);
++
++private:
++    QCameraFlash();
++    virtual ~QCameraFlash();
++    QCameraFlash(const QCameraFlash&);
++    QCameraFlash& operator=(const QCameraFlash&);
++
++    const camera_module_callbacks_t *m_callbacks;
++    int32_t m_flashFds[MM_CAMERA_MAX_NUM_SENSORS];
++    bool m_flashOn[MM_CAMERA_MAX_NUM_SENSORS];
++    bool m_cameraOpen[MM_CAMERA_MAX_NUM_SENSORS];
++};
++
++}; // namespace qcamera
++
++#endif /* __QCAMERA_FLASH_H__ */

@@ -37,10 +37,12 @@
 #include <utils/Errors.h>
 #include <ui/Fence.h>
 #include <gralloc_priv.h>
+#include "../util/QCameraFlash.h"
 #include "QCamera3HWI.h"
 #include "QCamera3Mem.h"
 #include "QCamera3Channel.h"
 #include "QCamera3PostProc.h"
+#include "QCamera3VendorTags.h"
 
 using namespace android;
 
@@ -135,8 +137,9 @@ camera3_device_ops_t QCamera3HardwareInterface::mCameraOps = {
     .register_stream_buffers =            QCamera3HardwareInterface::register_stream_buffers,
     .construct_default_request_settings = QCamera3HardwareInterface::construct_default_request_settings,
     .process_capture_request =            QCamera3HardwareInterface::process_capture_request,
-    .get_metadata_vendor_tag_ops =        QCamera3HardwareInterface::get_metadata_vendor_tag_ops,
+    .get_metadata_vendor_tag_ops =        NULL, /*QCamera3HardwareInterface::get_metadata_vendor_tag_ops,*/
     .dump =                               QCamera3HardwareInterface::dump,
+    .reserved =                           {0},
 };
 
 
@@ -150,7 +153,8 @@ camera3_device_ops_t QCamera3HardwareInterface::mCameraOps = {
  *
  * RETURN     : none
  *==========================================================================*/
-QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId)
+QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId,
+                        const camera_module_callbacks_t *callbacks)
     : mCameraId(cameraId),
       mCameraHandle(NULL),
       mCameraOpened(false),
@@ -165,10 +169,11 @@ QCamera3HardwareInterface::QCamera3HardwareInterface(int cameraId)
       mJpegSettings(NULL),
       mIsZslMode(false),
       m_pPowerModule(NULL),
-      mPrecaptureId(0)
+      mPrecaptureId(0),
+      mCallbacks(callbacks)
 {
     mCameraDevice.common.tag = HARDWARE_DEVICE_TAG;
-    mCameraDevice.common.version = CAMERA_DEVICE_API_VERSION_3_2;
+    mCameraDevice.common.version = CAMERA_DEVICE_API_VERSION_3_0;
     mCameraDevice.common.close = close_camera_device;
     mCameraDevice.ops = &mCameraOps;
     mCameraDevice.priv = this;
@@ -209,7 +214,7 @@ QCamera3HardwareInterface::~QCamera3HardwareInterface()
         it != mStreamInfo.end(); it++) {
         QCamera3Channel *channel = (QCamera3Channel *)(*it)->stream->priv;
         if (channel)
-           channel->stop();
+	           channel->stop();
     }
     for (List<stream_info_t *>::iterator it = mStreamInfo.begin();
         it != mStreamInfo.end(); it++) {
@@ -314,6 +319,16 @@ int QCamera3HardwareInterface::openCamera()
         ALOGE("Failure: Camera already opened");
         return ALREADY_EXISTS;
     }
+
+
+    int rc = QCameraFlash::getInstance().reserveFlashForCamera(mCameraId);
+    if (rc < 0) {
+        ALOGE("%s: Failed to reserve flash for camera id: %d",
+                __func__,
+                mCameraId);
+        return UNKNOWN_ERROR;
+    }
+
     mCameraHandle = camera_open(mCameraId);
     if (!mCameraHandle) {
         ALOGE("camera_open failed.");
@@ -354,6 +369,12 @@ int QCamera3HardwareInterface::closeCamera()
         }
     }
 #endif
+
+    if (QCameraFlash::getInstance().releaseFlashFromCamera(mCameraId) != 0) {
+        CDBG("%s: Failed to release flash for camera id: %d",
+                __func__,
+                mCameraId);
+    }
 
     return rc;
 }
@@ -3444,34 +3465,6 @@ int QCamera3HardwareInterface::process_capture_request(
 }
 
 /*===========================================================================
- * FUNCTION   : get_metadata_vendor_tag_ops
- *
- * DESCRIPTION:
- *
- * PARAMETERS :
- *
- *
- * RETURN     :
- *==========================================================================*/
-
-void QCamera3HardwareInterface::get_metadata_vendor_tag_ops(
-                const struct camera3_device *device,
-                vendor_tag_query_ops_t* ops)
-{
-    ALOGV("%s: E", __func__);
-    QCamera3HardwareInterface *hw =
-        reinterpret_cast<QCamera3HardwareInterface *>(device->priv);
-    if (!hw) {
-        ALOGE("%s: NULL camera device", __func__);
-        return;
-    }
-
-    hw->getMetadataVendorTagOps(ops);
-    ALOGV("%s: X", __func__);
-    return;
-}
-
-/*===========================================================================
  * FUNCTION   : dump
  *
  * DESCRIPTION:
@@ -3688,6 +3681,36 @@ QCamera3ReprocessChannel *QCamera3HardwareInterface::addOnlineReprocChannel(
         return NULL;
     }
     return pChannel;
+}
+
+/*===========================================================================
+* FUNCTION   : getFlashInfo
+*
+* DESCRIPTION: Retrieve information about whether the device has a flash.
+*
+* PARAMETERS :
+*   @cameraId  : Camera id to query
+*   @hasFlash  : Boolean indicating whether there is a flash device
+*                associated with given camera
+*   @flashNode : If a flash device exists, this will be its device node.
+*
+* RETURN     :
+*   None
+*==========================================================================*/
+void QCamera3HardwareInterface::getFlashInfo(const int cameraId,
+        bool& hasFlash,
+        char (&flashNode)[QCAMERA_MAX_FILEPATH_LENGTH])
+{
+    cam_capability_t* camCapability = gCamCapability[cameraId];
+    if (NULL == camCapability) {
+        hasFlash = false;
+        flashNode[0] = '\0';
+    } else {
+        hasFlash = camCapability->flash_available;
+        strlcpy(flashNode,
+                (char*)camCapability->flash_dev_name,
+                QCAMERA_MAX_FILEPATH_LENGTH);
+    }
 }
 
 int QCamera3HardwareInterface::getMaxUnmatchedFramesInQueue()

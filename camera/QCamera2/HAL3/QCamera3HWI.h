@@ -45,6 +45,17 @@ extern "C" {
 #include <mm_jpeg_interface.h>
 }
 
+
+#ifdef CDBG
+#undef CDBG
+#endif //#ifdef CDBG
+#define CDBG(fmt, args...) ALOGV(fmt, ##args)
+
+#ifdef CDBG_HIGH
+#undef CDBG_HIGH
+#endif //#ifdef CDBG_HIGH
+#define CDBG_HIGH(fmt, args...) ALOGD(fmt, ##args)
+
 using namespace android;
 
 namespace qcamera {
@@ -82,12 +93,11 @@ public:
                                 const struct camera3_device *, int type);
     static int process_capture_request(const struct camera3_device *,
                                 camera3_capture_request_t *request);
-    static void get_metadata_vendor_tag_ops(const struct camera3_device *,
-                                               vendor_tag_query_ops_t* ops);
     static void dump(const struct camera3_device *, int fd);
     static int close_camera_device(struct hw_device_t* device);
 public:
-    QCamera3HardwareInterface(int cameraId);
+    QCamera3HardwareInterface(int cameraId,
+            const camera_module_callbacks_t *callbacks);
     virtual ~QCamera3HardwareInterface();
     int openCamera(struct hw_device_t **hw_device);
     int getMetadata(int type);
@@ -168,6 +178,10 @@ public:
     int getJpegQuality();
     int calcMaxJpegSize();
     QCamera3Exif *getExifData();
+    static void getFlashInfo(const int cameraId,
+            bool& hasFlash,
+            char (&flashNode)[QCAMERA_MAX_FILEPATH_LENGTH]);
+
 private:
     camera3_device_t   mCameraDevice;
     uint8_t            mCameraId;
@@ -221,6 +235,8 @@ private:
     power_module_t *m_pPowerModule;   // power module
 
     int32_t mPrecaptureId;
+
+    const camera_module_callbacks_t *mCallbacks;
 
     static const QCameraMap EFFECT_MODES_MAP[];
     static const QCameraMap WHITE_BALANCE_MODES_MAP[];
