@@ -39,7 +39,7 @@ using namespace android;
 
 namespace qcamera {
 
-const int QCAMERA3_SECTION_COUNT = QCAMERA3_SECTIONS_END - VENDOR_SECTION;
+/* const int QCAMERA3_SECTION_COUNT = QCAMERA3_SECTIONS_END - VENDOR_SECTION; */
 
 enum qcamera3_ext_tags qcamera3_ext3_section_bounds[QCAMERA3_SECTIONS_END -
     VENDOR_SECTION] = {

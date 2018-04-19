@@ -15,7 +15,7 @@ LOCAL_SRC_FILES := \
         ../util/QCameraFlash.cpp \
         ../util/QCameraQueue.cpp
 
-LOCAL_CFLAGS := -Wall -Werror 
+LOCAL_CFLAGS := -Wall -Werror -Wno-unused-parameter
 LOCAL_CFLAGS += -DHAS_MULTIMEDIA_HINTS
 
 LOCAL_C_INCLUDES := \
