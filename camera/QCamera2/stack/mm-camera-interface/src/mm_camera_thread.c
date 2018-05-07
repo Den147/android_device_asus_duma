@@ -213,6 +213,8 @@ static void mm_camera_poll_proc_pipe(mm_camera_poll_thread_t *poll_cb)
     read_len = read(poll_cb->pfds[0], &cmd_evt, sizeof(cmd_evt));
     CDBG("%s: read_fd = %d, read_len = %d, expect_len = %d cmd = %d",
          __func__, poll_cb->pfds[0], (int)read_len, (int)sizeof(cmd_evt), cmd_evt.cmd);
+    // read_len is unused if not debugging.
+    (void)read_len;
     switch (cmd_evt.cmd) {
     case MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED:
     case MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED_ASYNC:
@@ -494,8 +496,8 @@ int32_t mm_camera_poll_thread_launch(mm_camera_poll_thread_t * poll_cb,
 
     poll_cb->poll_type = poll_type;
 
-    poll_cb->pfds[0] = 0;
-    poll_cb->pfds[1] = 0;
+    poll_cb->pfds[0] = -1;
+    poll_cb->pfds[1] = -1;
     rc = pipe(poll_cb->pfds);
     if(rc < 0) {
         CDBG_ERROR("%s: pipe open rc=%d\n", __func__, rc);
@@ -544,10 +546,10 @@ int32_t mm_camera_poll_thread_release(mm_camera_poll_thread_t *poll_cb)
     }
 
     /* close pipe */
-    if(poll_cb->pfds[0]) {
+    if(poll_cb->pfds[0] >= 0) {
         close(poll_cb->pfds[0]);
     }
-    if(poll_cb->pfds[1]) {
+    if(poll_cb->pfds[1] >= 0) {
         close(poll_cb->pfds[1]);
     }
 
@@ -556,6 +558,8 @@ int32_t mm_camera_poll_thread_release(mm_camera_poll_thread_t *poll_cb)
     memset(poll_cb, 0, sizeof(mm_camera_poll_thread_t));
 done:
     pthread_mutex_unlock(&constr_destr_lock);
+    poll_cb->pfds[0] = -1;
+    poll_cb->pfds[1] = -1;
     return rc;
 }
 

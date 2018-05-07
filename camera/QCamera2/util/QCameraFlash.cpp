@@ -148,6 +148,10 @@ int32_t QCameraFlash::initFlash(const int camera_id)
             hasFlash,
             flashNode);
 
+    if (hasFlash && !*flashNode) {
+        getFlashNode(camera_id, flashNode);
+    }
+
     strlcat(flashPath,
             flashNode,
             sizeof(flashPath));
@@ -156,7 +160,7 @@ int32_t QCameraFlash::initFlash(const int camera_id)
         ALOGE("%s: No flash available for camera id: %d",
                 __func__,
                 camera_id);
-        retVal = -EINVAL;
+        retVal = -ENOSYS;
     } else if (m_cameraOpen[camera_id]) {
         ALOGE("%s: Camera in use for camera id: %d",
                 __func__,
@@ -191,6 +195,56 @@ int32_t QCameraFlash::initFlash(const int camera_id)
     }
 
     return retVal;
+}
+
+/*===========================================================================
+ * FUNCTION   : getFlashNode
+ *
+ * DESCRIPTION: Retrieve a camera's flash node via V4L2 subdevice enumeration.
+ *
+ * PARAMETERS :
+ *   @camera_id  : Camera id of the flash
+ *   @flashNode  : Flash subdevice node
+ *
+ * RETURN     :
+ *   None
+ *==========================================================================*/
+void QCameraFlash::getFlashNode(const int camera_id,
+        char (&flashNode)[QCAMERA_MAX_FILEPATH_LENGTH])
+{
+    int dev_fd = 0;
+    char dev_name[32];
+    int32_t num_entities = 1;
+
+    flashNode[0] = '\0';
+
+    snprintf(dev_name, sizeof(dev_name), "/dev/media%d", camera_id);
+    dev_fd = open(dev_name, O_RDWR | O_NONBLOCK);
+    if (dev_fd < 0) {
+        ALOGE("Can't open /dev/media%d\n", camera_id);
+        goto close_fd;
+    }
+
+    while (1) {
+        struct media_entity_desc entity;
+        memset(&entity, 0, sizeof(entity));
+        entity.id = num_entities++;
+        if (ioctl(dev_fd, MEDIA_IOC_ENUM_ENTITIES, &entity) < 0) {
+            CDBG("Done enumerating /dev/media%d entities\n", camera_id);
+            break;
+        }
+        if(entity.type == MEDIA_ENT_T_V4L2_SUBDEV &&
+           entity.group_id == MSM_CAMERA_SUBDEV_LED_FLASH) {
+            strlcpy(flashNode, entity.name, QCAMERA_MAX_FILEPATH_LENGTH);
+            ALOGI("%s: cameraId=%d, flashNode='%s']\n", __func__,
+                  camera_id, flashNode);
+            break;
+        }
+    }
+
+close_fd:
+    close(dev_fd);
+    dev_fd = -1;
 }
 
 /*===========================================================================
@@ -315,10 +369,22 @@ int32_t QCameraFlash::reserveFlashForCamera(const int camera_id)
         }
         m_cameraOpen[camera_id] = true;
 
+        bool hasFlash = false;
+        char flashNode[QCAMERA_MAX_FILEPATH_LENGTH];
+
+        QCamera3HardwareInterface::getFlashInfo(camera_id,
+                hasFlash,
+                flashNode);
+
         if (m_callbacks == NULL ||
                 m_callbacks->torch_mode_status_change == NULL) {
             ALOGE("%s: Callback is not defined!", __func__);
             retVal = -ENOSYS;
+        } else if (!hasFlash) {
+            CDBG("%s: Suppressing callback "
+                    "because no flash exists for camera id: %d",
+                    __func__,
+                    camera_id);
         } else {
             char cameraIdStr[STRING_LENGTH_OF_64_BIT_NUMBER];
             snprintf(cameraIdStr, STRING_LENGTH_OF_64_BIT_NUMBER,
@@ -360,10 +426,22 @@ int32_t QCameraFlash::releaseFlashFromCamera(const int camera_id)
     } else {
         m_cameraOpen[camera_id] = false;
 
+        bool hasFlash = false;
+        char flashNode[QCAMERA_MAX_FILEPATH_LENGTH];
+
+        QCamera3HardwareInterface::getFlashInfo(camera_id,
+                hasFlash,
+                flashNode);
+
         if (m_callbacks == NULL ||
                 m_callbacks->torch_mode_status_change == NULL) {
             ALOGE("%s: Callback is not defined!", __func__);
             retVal = -ENOSYS;
+        } else if (!hasFlash) {
+            CDBG("%s: Suppressing callback "
+                    "because no flash exists for camera id: %d",
+                    __func__,
+                    camera_id);
         } else {
             char cameraIdStr[STRING_LENGTH_OF_64_BIT_NUMBER];
             snprintf(cameraIdStr, STRING_LENGTH_OF_64_BIT_NUMBER,

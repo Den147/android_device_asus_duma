@@ -15,6 +15,10 @@ ifeq ($(strip $(TARGET_USES_ION)),true)
     LOCAL_CFLAGS += -DUSE_ION
 endif
 
+ifneq ($(filter msm8226 msm8974,$(TARGET_BOARD_PLATFORM)),)
+    LOCAL_CFLAGS += -DVENUS_PRESENT
+endif
+
 LOCAL_CFLAGS += -D_ANDROID_
 LOCAL_COPY_HEADERS_TO := mm-camera-interface
 LOCAL_COPY_HEADERS += ../common/cam_intf.h
@@ -24,11 +28,10 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/inc \
     $(LOCAL_PATH)/../common
 
-LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
-LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+LOCAL_C_INCLUDES += hardware/qcom/media/mm-core/inc
 
-LOCAL_C_INCLUDES += $(call project-path-for,qcom-media)/mm-core/inc
+LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
 LOCAL_CFLAGS += -Wall -Werror
 

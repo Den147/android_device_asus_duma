@@ -59,7 +59,7 @@ public:
     QCamera3Memory();
     virtual ~QCamera3Memory();
 
-    void getBufDef(const cam_frame_len_offset_t &offset,
+    int32_t getBufDef(const cam_frame_len_offset_t &offset,
                 mm_camera_buf_def_t &bufDef, int index) const;
 
 protected:
@@ -107,7 +107,7 @@ public:
     QCamera3GrallocMemory();
     virtual ~QCamera3GrallocMemory();
 
-    int registerBuffers(uint32_t num_buffers, buffer_handle_t **buffers);
+    int registerBuffer(buffer_handle_t *buffer);
     void unregisterBuffers();
     virtual int cacheOps(int index, unsigned int cmd);
     virtual int getRegFlags(uint8_t *regFlags) const;
@@ -115,7 +115,7 @@ public:
     virtual void *getPtr(int index) const;
     int32_t markFrameNumber(int index, uint32_t frameNumber);
     int32_t getFrameNumber(int index);
-
+    void *getBufferHandle(int index);
 private:
     buffer_handle_t *mBufferHandle[MM_CAMERA_MAX_NUM_FRAMES];
     struct private_handle_t *mPrivateHandle[MM_CAMERA_MAX_NUM_FRAMES];

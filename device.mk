@@ -142,7 +142,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libmmcamera_interface2 \
     libmmcamera_interface \
+    libmmjpeg_interface \
+    mm-jpeg-interface-test \
+    mm-qcamera-app \
     Camera2 \
+    libqomx_core \
     camera.duma
 
 PRODUCT_PACKAGES += \

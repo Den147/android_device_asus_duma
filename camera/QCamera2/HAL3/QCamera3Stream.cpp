@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundataion. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -28,6 +28,7 @@
 */
 
 #define LOG_TAG "QCamera3Stream"
+//#define LOG_NDEBUG 0
 
 #include <utils/Log.h>
 #include <utils/Errors.h>
@@ -168,8 +169,11 @@ QCamera3Stream::QCamera3Stream(uint32_t camHandle,
         mHandle(0),
         mCamOps(camOps),
         mStreamInfo(NULL),
+        mMemOps(NULL),
         mNumBufs(0),
         mDataCB(NULL),
+        mUserData(NULL),
+        mDataQ(releaseFrameData, this),
         mStreamInfoBuf(NULL),
         mStreamBufs(NULL),
         mBufDefs(NULL),
@@ -265,19 +269,7 @@ int32_t QCamera3Stream::init(cam_stream_type_t streamType,
     mStreamInfo->stream_type = streamType;
     mStreamInfo->fmt = streamFormat;
     mStreamInfo->dim = streamDim;
-
-
-
-    mNumBufs = minNumBuffers;
-    if (reprocess_config != NULL) {
-       mStreamInfo->reprocess_config = *reprocess_config;
-       mStreamInfo->streaming_mode = CAM_STREAMING_MODE_BURST;
-       //mStreamInfo->num_of_burst = reprocess_config->offline.num_of_bufs;
-       mStreamInfo->num_of_burst = 1;
-       ALOGE("%s: num_of_burst is %d", __func__, mStreamInfo->num_of_burst);
-    } else {
-       mStreamInfo->streaming_mode = CAM_STREAMING_MODE_CONTINUOUS;
-    }
+    mStreamInfo->num_bufs = minNumBuffers;
 
     rc = mCamOps->map_stream_buf(mCamHandle,
             mChannelHandle, mHandle, CAM_MAPPING_BUF_TYPE_STREAM_INFO,
@@ -285,6 +277,17 @@ int32_t QCamera3Stream::init(cam_stream_type_t streamType,
     if (rc < 0) {
         ALOGE("Failed to map stream info buffer");
         goto err3;
+    }
+
+    mNumBufs = minNumBuffers;
+    if (reprocess_config != NULL) {
+       mStreamInfo->reprocess_config = *reprocess_config;
+       mStreamInfo->streaming_mode = CAM_STREAMING_MODE_BURST;
+       //mStreamInfo->num_of_burst = reprocess_config->offline.num_of_bufs;
+       mStreamInfo->num_of_burst = 1;
+       ALOGI("%s: num_of_burst is %d", __func__, mStreamInfo->num_of_burst);
+    } else {
+       mStreamInfo->streaming_mode = CAM_STREAMING_MODE_CONTINUOUS;
     }
 
     // Configure the stream
@@ -337,6 +340,8 @@ done:
 int32_t QCamera3Stream::start()
 {
     int32_t rc = 0;
+
+    mDataQ.init();
     rc = mProcTh.launch(dataProcRoutine, this);
     return rc;
 }
@@ -374,8 +379,15 @@ int32_t QCamera3Stream::stop()
 int32_t QCamera3Stream::processDataNotify(mm_camera_super_buf_t *frame)
 {
     ALOGV("%s: E\n", __func__);
-    mDataQ.enqueue((void *)frame);
-    int32_t rc = mProcTh.sendCmd(CAMERA_CMD_TYPE_DO_NEXT_JOB, FALSE, FALSE);
+    int32_t rc;
+    if (mDataQ.enqueue((void *)frame)) {
+        rc = mProcTh.sendCmd(CAMERA_CMD_TYPE_DO_NEXT_JOB, FALSE, FALSE);
+    } else {
+        ALOGD("%s: Stream thread is not active, no ops here", __func__);
+        bufDone(frame->bufs[0]->buf_idx);
+        free(frame);
+        rc = NO_ERROR;
+    }
     ALOGV("%s: X\n", __func__);
     return rc;
 }
@@ -433,6 +445,7 @@ void *QCamera3Stream::dataProcRoutine(void *data)
     int ret;
     QCamera3Stream *pme = (QCamera3Stream *)data;
     QCameraCmdThread *cmdThread = &pme->mProcTh;
+    cmdThread->setName("cam_stream_proc");
 
     ALOGV("%s: E", __func__);
     do {
@@ -492,7 +505,8 @@ void *QCamera3Stream::dataProcRoutine(void *data)
 mm_camera_buf_def_t* QCamera3Stream::getInternalFormatBuffer(int index)
 {
     mm_camera_buf_def_t *rc = NULL;
-    if (index >= mNumBufs || mBufDefs == NULL) {
+    if ((index >= mNumBufs) || (mBufDefs == NULL) ||
+            (NULL == mBufDefs[index].mem_info)) {
         ALOGE("%s:Index out of range/no internal buffers yet", __func__);
         return NULL;
     }
@@ -524,6 +538,27 @@ int32_t QCamera3Stream::bufDone(int index)
 
     if (index >= mNumBufs || mBufDefs == NULL)
         return BAD_INDEX;
+
+    if( NULL == mBufDefs[index].mem_info) {
+        if (NULL == mMemOps) {
+            ALOGE("%s: Camera operations not initialized", __func__);
+            return NO_INIT;
+        }
+
+        rc = mMemOps->map_ops(index, -1, mStreamBufs->getFd(index),
+                mStreamBufs->getSize(index), mMemOps->userdata);
+        if (rc < 0) {
+            ALOGE("%s: Failed to map camera buffer %d", __func__, index);
+            return rc;
+        }
+
+        rc = mStreamBufs->getBufDef(mFrameLenOffset, mBufDefs[index], index);
+        if (NO_ERROR != rc) {
+            ALOGE("%s: Couldn't find camera buffer definition", __func__);
+            mMemOps->unmap_ops(index, -1, mMemOps->userdata);
+            return rc;
+        }
+    }
 
     rc = mCamOps->qbuf(mCamHandle, mChannelHandle, &mBufDefs[index]);
     if (rc < 0)
@@ -564,6 +599,7 @@ int32_t QCamera3Stream::getBufs(cam_frame_len_offset_t *offset,
     }
 
     mFrameLenOffset = *offset;
+    mMemOps = ops_tbl;
 
     mStreamBufs = mChannel->getStreamBufs(mFrameLenOffset.frame_len);
     if (!mStreamBufs) {
@@ -571,7 +607,8 @@ int32_t QCamera3Stream::getBufs(cam_frame_len_offset_t *offset,
         return NO_MEMORY;
     }
 
-    for (int i = 0; i < mNumBufs; i++) {
+    int registeredBuffers = mStreamBufs->getCnt();
+    for (int i = 0; i < registeredBuffers; i++) {
         rc = ops_tbl->map_ops(i, -1, mStreamBufs->getFd(i),
                 mStreamBufs->getSize(i), ops_tbl->userdata);
         if (rc < 0) {
@@ -587,30 +624,32 @@ int32_t QCamera3Stream::getBufs(cam_frame_len_offset_t *offset,
     regFlags = (uint8_t *)malloc(sizeof(uint8_t) * mNumBufs);
     if (!regFlags) {
         ALOGE("%s: Out of memory", __func__);
-        for (int i = 0; i < mNumBufs; i++) {
+        for (int i = 0; i < registeredBuffers; i++) {
             ops_tbl->unmap_ops(i, -1, ops_tbl->userdata);
         }
         return NO_MEMORY;
     }
+    memset(regFlags, 0, sizeof(uint8_t) * mNumBufs);
 
     mBufDefs = (mm_camera_buf_def_t *)malloc(mNumBufs * sizeof(mm_camera_buf_def_t));
     if (mBufDefs == NULL) {
         ALOGE("%s: Failed to allocate mm_camera_buf_def_t %d", __func__, rc);
-        for (int i = 0; i < mNumBufs; i++) {
+        for (int i = 0; i < registeredBuffers; i++) {
             ops_tbl->unmap_ops(i, -1, ops_tbl->userdata);
         }
         free(regFlags);
         regFlags = NULL;
         return INVALID_OPERATION;
     }
-    for (int i = 0; i < mNumBufs; i++) {
+    memset(mBufDefs, 0, mNumBufs * sizeof(mm_camera_buf_def_t));
+    for (int i = 0; i < registeredBuffers; i++) {
         mStreamBufs->getBufDef(mFrameLenOffset, mBufDefs[i], i);
     }
 
     rc = mStreamBufs->getRegFlags(regFlags);
     if (rc < 0) {
         ALOGE("%s: getRegFlags failed %d", __func__, rc);
-        for (int i = 0; i < mNumBufs; i++) {
+        for (int i = 0; i < registeredBuffers; i++) {
             ops_tbl->unmap_ops(i, -1, ops_tbl->userdata);
         }
         free(mBufDefs);
@@ -642,9 +681,11 @@ int32_t QCamera3Stream::putBufs(mm_camera_map_unmap_ops_tbl_t *ops_tbl)
 {
     int rc = NO_ERROR;
     for (int i = 0; i < mNumBufs; i++) {
-        rc = ops_tbl->unmap_ops(i, -1, ops_tbl->userdata);
-        if (rc < 0) {
-            ALOGE("%s: map_stream_buf failed: %d", __func__, rc);
+        if (NULL != mBufDefs[i].mem_info) {
+            rc = ops_tbl->unmap_ops(i, -1, ops_tbl->userdata);
+            if (rc < 0) {
+                ALOGE("%s: map_stream_buf failed: %d", __func__, rc);
+            }
         }
     }
     mBufDefs = NULL; // mBufDefs just keep a ptr to the buffer
@@ -858,6 +899,26 @@ int32_t QCamera3Stream::setParameter(cam_stream_parm_buffer_t &param)
         param = mStreamInfo->parm_buf;
     }
     return rc;
+}
+
+/*===========================================================================
+ * FUNCTION   : releaseFrameData
+ *
+ * DESCRIPTION: callback function to release frame data node
+ *
+ * PARAMETERS :
+ *   @data      : ptr to post process input data
+ *   @user_data : user data ptr (QCameraReprocessor)
+ *
+ * RETURN     : None
+ *==========================================================================*/
+void QCamera3Stream::releaseFrameData(void *data, void *user_data)
+{
+    QCamera3Stream *pme = (QCamera3Stream *)user_data;
+    mm_camera_super_buf_t *frame = (mm_camera_super_buf_t *)data;
+    if (NULL != pme) {
+        pme->bufDone(frame->bufs[0]->buf_idx);
+    }
 }
 
 }; // namespace qcamera

@@ -28,6 +28,7 @@
 */
 
 #define LOG_TAG "QCamera3Factory"
+//#define LOG_NDEBUG 0
 
 #include <stdlib.h>
 #include <utils/Log.h>
@@ -54,19 +55,8 @@ QCamera3Factory *gQCamera3Factory = NULL;
  *==========================================================================*/
 QCamera3Factory::QCamera3Factory()
 {
-    camera_info info;
-
     mCallbacks = NULL;
     mNumOfCameras = get_num_of_cameras();
-
-    //Query camera at this point in order
-    //to avoid any delays during subsequent
-    //calls to 'getCameraInfo()'
-    for (int i = 0 ; i < mNumOfCameras ; i++) {
-        getCameraInfo(i, &info);
-    }
-    //
-
 }
 
 /*===========================================================================
@@ -93,6 +83,13 @@ QCamera3Factory::~QCamera3Factory()
  *==========================================================================*/
 int QCamera3Factory::get_number_of_cameras()
 {
+    if (!gQCamera3Factory) {
+        gQCamera3Factory = new QCamera3Factory();
+        if (!gQCamera3Factory) {
+            ALOGE("%s: Failed to allocate Camera3Factory object", __func__);
+            return 0;
+        }
+    }
     return gQCamera3Factory->getNumberOfCameras();
 }
 
@@ -113,7 +110,6 @@ int QCamera3Factory::get_camera_info(int camera_id, struct camera_info *info)
 {
     return gQCamera3Factory->getCameraInfo(camera_id, info);
 }
-
 
 /*===========================================================================
  * FUNCTION   : set_callbacks
@@ -208,7 +204,6 @@ int QCamera3Factory::getCameraInfo(int camera_id, struct camera_info *info)
     ALOGV("%s: X", __func__);
     return rc;
 }
-
 
 /*===========================================================================
  * FUNCTION   : setCallbacks
@@ -365,5 +360,6 @@ int QCamera3Factory::setTorchMode(const char* camera_id, bool on)
 
     return retVal;
 }
+
 }; // namespace qcamera
 

@@ -15,15 +15,20 @@ LOCAL_SRC_FILES := \
         ../util/QCameraFlash.cpp \
         ../util/QCameraQueue.cpp
 
-LOCAL_CFLAGS := -Wall -Werror -Wno-unused-parameter
+LOCAL_CFLAGS := -Wall -Werror
 LOCAL_CFLAGS += -DHAS_MULTIMEDIA_HINTS
+
+# QCamera3Factory.cpp has unused parameters.
+LOCAL_CFLAGS += -Wno-unused-parameter
+# QCamera3Channel.cpp compares array 'str' to a null pointer.
+LOCAL_CLANG_CFLAGS += -Wno-tautological-pointer-compare
 
 LOCAL_C_INCLUDES := \
         $(LOCAL_PATH)/../stack/common \
         frameworks/native/include/media/openmax \
         frameworks/native/include \
         frameworks/av/include \
-        $(call project-path-for,qcom-media)/libstagefrighthw \
+        hardware/qcom/media/libstagefrighthw \
         system/media/camera/include \
         $(LOCAL_PATH)/../../mm-image-codec/qexif \
         $(LOCAL_PATH)/../../mm-image-codec/qomx_core \
@@ -33,18 +38,16 @@ LOCAL_C_INCLUDES += \
         $(call project-path-for,qcom-display)/libgralloc
 
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
-LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
-LOCAL_SHARED_LIBRARIES := libcamera_client liblog libhardware libutils libcutils libdl
+LOCAL_SHARED_LIBRARIES := libcamera_client liblog libhardware libutils libcutils libdl libsync
 LOCAL_SHARED_LIBRARIES += libmmcamera_interface libmmjpeg_interface libui libcamera_metadata
 
 LOCAL_MODULE_RELATIVE_PATH := hw
 #LOCAL_MODULE := camera.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE := camera.$(TARGET_DEVICE)
-#LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := optional
 LOCAL_PROPRIETARY_MODULE := true
-
 include $(BUILD_SHARED_LIBRARY)
 
 #include $(LOCAL_PATH)/test/Android.mk

@@ -45,7 +45,7 @@
 #define MM_CAMERA_CHANNEL_POLL_THREAD_MAX 1
 
 #define MM_CAMERA_DEV_NAME_LEN 32
-#define MM_CAMERA_DEV_OPEN_TRIES 30
+#define MM_CAMERA_DEV_OPEN_TRIES 20
 #define MM_CAMERA_DEV_OPEN_RETRY_SLEEP 20
 
 #ifndef TRUE
@@ -224,6 +224,8 @@ typedef struct mm_stream {
     uint8_t is_bundled; /* flag if stream is bundled */
 
     mm_camera_stream_mem_vtbl_t mem_vtbl; /* mem ops tbl */
+
+    mm_camera_map_unmap_ops_tbl_t map_ops;
 
     int8_t queued_buffer_count;
 } mm_stream_t;

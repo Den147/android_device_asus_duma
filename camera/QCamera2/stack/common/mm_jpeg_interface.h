@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012, 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,7 +29,7 @@
 
 #ifndef MM_JPEG_INTERFACE_H_
 #define MM_JPEG_INTERFACE_H_
-#include "QOMX_JpegExtensions.h"
+#include "../../../mm-image-codec/qomx_core/QOMX_JpegExtensions.h"
 #include "cam_intf.h"
 
 #define MM_JPEG_MAX_PLANES 3
@@ -40,6 +40,10 @@ typedef enum {
   MM_JPEG_FMT_BITSTREAM
 } mm_jpeg_format_t;
 
+typedef struct {
+  cam_3a_params_t cam_3a_params;
+  cam_sensor_params_t sensor_params;
+} mm_jpeg_exif_params_t;
 typedef struct {
   uint32_t sequence;          /* for jpeg bit streams, assembling is based on sequence. sequence starts from 0 */
   uint8_t *buf_vaddr;        /* ptr to buf */
@@ -121,6 +125,9 @@ typedef struct {
   /* jpeg quality: range 0~100 */
   uint32_t quality;
 
+  /* jpeg thumbnail quality: range 0~100 */
+  uint32_t thumb_quality;
+
   /* buf to exif entries, caller needs to
    * take care of the memory manage with insider ptr */
   QOMX_EXIF_INFO exif_info;
@@ -146,9 +153,17 @@ typedef struct {
   /*session id*/
   uint32_t session_id;
 
-  /*Metadata stream*/
-  cam_metadata_info_t *p_metadata;
+  /*Metadata from HAl version 1 */
+  cam_metadata_info_t *p_metadata_v1;
 
+  /*Metadata stream from HAL version 3*/
+  metadata_buffer_t *p_metadata_v3;
+
+  /* buf to exif entries, caller needs to
+   * take care of the memory manage with insider ptr */
+  QOMX_EXIF_INFO exif_info;
+  /* 3a parameters */
+  mm_jpeg_exif_params_t cam_exif_params;
 } mm_jpeg_encode_job_t;
 
 typedef enum {
