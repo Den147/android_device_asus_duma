@@ -4,6 +4,10 @@ include $(CLEAR_VARS)
 
 LOCAL_CFLAGS+= -D_ANDROID_
 
+LOCAL_C_INCLUDES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
+LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+
 LOCAL_C_INCLUDES += \
     frameworks/native/include/media/openmax \
     $(LOCAL_PATH)/inc \
@@ -21,10 +25,6 @@ LOCAL_SRC_FILES := \
     src/mm_jpeg_exif.c \
     src/mm_jpeg.c \
     src/mm_jpeg_interface.c
-
-LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
-LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
 LOCAL_MODULE           := libmmjpeg_interface
 LOCAL_SHARED_LIBRARIES := libdl libcutils liblog libqomx_core

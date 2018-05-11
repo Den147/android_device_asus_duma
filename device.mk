@@ -135,19 +135,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Camera HILD
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
-    android.hardware.camera.provider@2.4-service \
-    camera.device@3.2-impl
+    camera.device@3.2-impl \
+    android.hardware.camera.provider@2.4-service
 
 # Camera
 PRODUCT_PACKAGES += \
-    libmmcamera_interface2 \
-    libmmcamera_interface \
-    libmmjpeg_interface \
-    mm-jpeg-interface-test \
-    mm-qcamera-app \
-    Camera2 \
-    libqomx_core \
-    camera.duma
+    Snap \
+    camera.msm8960 
 
 PRODUCT_PACKAGES += \
     hostapd_default.conf
@@ -298,6 +292,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.radio@1.0-impl \
     android.hardware.radio.deprecated@1.0-impl
+
+# Stlport
+PRODUCT_PACKAGES += \
+    libstlport
+
 
 # Sensors
 PRODUCT_PACKAGES += \

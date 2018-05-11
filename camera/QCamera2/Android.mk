@@ -1,1 +1,3 @@
-include $(call all-subdir-makefiles)
+ifeq ($(TARGET_ARCH),arm)
+  include $(call all-subdir-makefiles)
+endif

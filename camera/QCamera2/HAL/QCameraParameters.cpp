@@ -2949,7 +2949,7 @@ int32_t QCameraParameters::initDefaultParameters()
     // Set raw image size
     char raw_size_str[32];
     snprintf(raw_size_str, sizeof(raw_size_str), "%dx%d",
-             m_pCapability->raw_dim[0].width, m_pCapability->raw_dim[0].height);
+             m_pCapability->raw_dim.width, m_pCapability->raw_dim.height);
     set(KEY_QC_RAW_PICUTRE_SIZE, raw_size_str);
 
     //set default jpeg quality and thumbnail quality
@@ -4173,7 +4173,7 @@ int32_t QCameraParameters::setExposureCompensation(int expComp)
     // Don't need to pass step as part of setParameter because
     // camera daemon is already aware of it.
     return AddSetParmEntryToBatch(m_pParamBuf,
-                                  CAM_INTF_PARM_EV,
+                                  CAM_INTF_PARM_EXPOSURE_COMPENSATION,
                                   sizeof(expComp),
                                   &expComp);
 }
@@ -4894,7 +4894,7 @@ int32_t QCameraParameters::getStreamDimension(cam_stream_type_t streamType,
         getVideoSize(&dim.width, &dim.height);
         break;
     case CAM_STREAM_TYPE_RAW:
-        dim = m_pCapability->raw_dim[0];
+        dim = m_pCapability->raw_dim;
         break;
     case CAM_STREAM_TYPE_METADATA:
         dim.width = sizeof(cam_metadata_info_t);

@@ -27,7 +27,7 @@
  *
  */
 
-#define LOG_TAG "QCamera3HWI_Mem"
+#define LOG_TAG "QCameraHWI_Mem"
 
 #include <string.h>
 #include <fcntl.h>
@@ -185,18 +185,15 @@ int QCamera3Memory::getCnt() const
  *   @bufDef  : [output] reference to struct to store buffer definition
  *   @index   : [input] index of the buffer
  *
- * RETURN     : int32_t type of status
- *              NO_ERROR  -- success
- *              none-zero failure code
+ * RETURN     : none
  *==========================================================================*/
-int32_t QCamera3Memory::getBufDef(const cam_frame_len_offset_t &offset,
+void QCamera3Memory::getBufDef(const cam_frame_len_offset_t &offset,
         mm_camera_buf_def_t &bufDef, int index) const
 {
     if (!mBufferCount) {
         ALOGE("Memory not allocated");
-        return NO_INIT;
+        return;
     }
-
     bufDef.fd = mMemInfo[index].fd;
     bufDef.frame_len = mMemInfo[index].size;
     bufDef.mem_info = (void *)this;
@@ -217,8 +214,6 @@ int32_t QCamera3Memory::getBufDef(const cam_frame_len_offset_t &offset,
                  bufDef.planes[i-1].reserved[0] +
                  bufDef.planes[i-1].length;
     }
-
-    return NO_ERROR;
 }
 
 /*===========================================================================
@@ -326,7 +321,7 @@ int QCamera3HeapMemory::allocOneBuffer(QCamera3MemInfo &memInfo, int heap_id, in
     int main_ion_fd = 0;
 
     main_ion_fd = open("/dev/ion", O_RDONLY);
-    if (main_ion_fd < 0) {
+    if (main_ion_fd <= 0) {
         ALOGE("Ion dev open failed: %s\n", strerror(errno));
         goto ION_OPEN_FAILED;
     }
@@ -434,8 +429,8 @@ void *QCamera3HeapMemory::getPtr(int index) const
  *==========================================================================*/
 int QCamera3HeapMemory::allocate(int count, int size, bool queueAll)
 {
-    int heap_mask = 0x1 << ION_IOMMU_HEAP_ID;
-    int rc = alloc(count, size, heap_mask);
+    int heap_id_mask = 0x1 << ION_IOMMU_HEAP_ID;
+    int rc = alloc(count, size, heap_id_mask);
     if (rc < 0)
         return rc;
 
@@ -589,76 +584,104 @@ QCamera3GrallocMemory::~QCamera3GrallocMemory()
 }
 
 /*===========================================================================
- * FUNCTION   : registerBuffer
+ * FUNCTION   : registerBuffers
  *
- * DESCRIPTION: registers frameworks-allocated gralloc buffer_handle_t
+ * DESCRIPTION: register frameworks-allocated gralloc buffer_handle_t
  *
  * PARAMETERS :
- *   @buffers : buffer_handle_t pointer
+ *   @num_buffer : number of buffers to be registered
+ *   @buffers    : array of buffer_handle_t pointers
  *
  * RETURN     : int32_t type of status
  *              NO_ERROR  -- success
  *              none-zero failure code
  *==========================================================================*/
-int QCamera3GrallocMemory::registerBuffer(buffer_handle_t *buffer)
+int QCamera3GrallocMemory::registerBuffers(uint32_t num_buffers, buffer_handle_t **buffers)
 {
     status_t ret = NO_ERROR;
     struct ion_fd_data ion_info_fd;
-    void *vaddr = NULL;
     ALOGV(" %s : E ", __FUNCTION__);
 
     memset(&ion_info_fd, 0, sizeof(ion_info_fd));
 
-    if (mBufferCount >= (MM_CAMERA_MAX_NUM_FRAMES - 1)) {
+
+    if (num_buffers > MM_CAMERA_MAX_NUM_FRAMES) {
         ALOGE("%s: Number of buffers %d greater than what's supported %d",
-            __func__, mBufferCount, MM_CAMERA_MAX_NUM_FRAMES);
+            __func__, num_buffers, MM_CAMERA_MAX_NUM_FRAMES);
         return -EINVAL;
     }
 
-    if (0 <= getMatchBufIndex((void *) buffer)) {
-        ALOGV("%s: Buffer already registered", __func__);
-        return ALREADY_EXISTS;
-    }
-
-    mBufferHandle[mBufferCount] = buffer;
-    mPrivateHandle[mBufferCount] =
-        (struct private_handle_t *)(*mBufferHandle[mBufferCount]);
-    mMemInfo[mBufferCount].main_ion_fd = open("/dev/ion", O_RDONLY);
-    if (mMemInfo[mBufferCount].main_ion_fd < 0) {
-        ALOGE("%s: failed: could not open ion device", __func__);
-        ret = NO_MEMORY;
-        goto end;
-    } else {
-        ion_info_fd.fd = mPrivateHandle[mBufferCount]->fd;
-        if (ioctl(mMemInfo[mBufferCount].main_ion_fd,
-                  ION_IOC_IMPORT, &ion_info_fd) < 0) {
-            ALOGE("%s: ION import failed\n", __func__);
-            close(mMemInfo[mBufferCount].main_ion_fd);
-            ret = NO_MEMORY;
-            goto end;
+    for (size_t cnt = 0; cnt < num_buffers; cnt++) {
+        if (buffers[cnt] == NULL) {
+            ALOGE("%s: Invalid buffers[%d].", __func__, cnt);
+            return -EINVAL;
         }
-    }
-    ALOGV("%s: idx = %d, fd = %d, size = %d, offset = %d",
-            __func__, mBufferCount, mPrivateHandle[mBufferCount]->fd,
-            mPrivateHandle[mBufferCount]->size,
-            mPrivateHandle[mBufferCount]->offset);
-    mMemInfo[mBufferCount].fd =
-            mPrivateHandle[mBufferCount]->fd;
-    mMemInfo[mBufferCount].size =
-            mPrivateHandle[mBufferCount]->size;
-    mMemInfo[mBufferCount].handle = ion_info_fd.handle;
+        mBufferHandle[cnt] = buffers[cnt];
+        mPrivateHandle[cnt] =
+            (struct private_handle_t *)(*mBufferHandle[cnt]);
+        mMemInfo[cnt].main_ion_fd = open("/dev/ion", O_RDONLY);
+        if (mMemInfo[cnt].main_ion_fd < 0) {
+            ALOGE("%s: failed: could not open ion device", __func__);
+            for(size_t i = 0; i < cnt; i++) {
+                struct ion_handle_data ion_handle;
+                memset(&ion_handle, 0, sizeof(ion_handle));
+                ion_handle.handle = mMemInfo[i].handle;
+                if (ioctl(mMemInfo[i].main_ion_fd, ION_IOC_FREE, &ion_handle) < 0) {
+                    ALOGE("%s: ion free failed", __func__);
+                }
+                close(mMemInfo[i].main_ion_fd);
+                ALOGD("%s: cancel_buffer: hdl =%p", __func__, (*mBufferHandle[i]));
+                mBufferHandle[i] = NULL;
+            }
+            memset(&mMemInfo, 0, sizeof(mMemInfo));
+            ret = -ENOMEM;
+            goto end;
+        } else {
+            ion_info_fd.fd = mPrivateHandle[cnt]->fd;
+            if (ioctl(mMemInfo[cnt].main_ion_fd,
+                      ION_IOC_IMPORT, &ion_info_fd) < 0) {
+                ALOGE("%s: ION import failed\n", __func__);
+                for(size_t i = 0; i < cnt; i++) {
+                    struct ion_handle_data ion_handle;
+                    memset(&ion_handle, 0, sizeof(ion_handle));
+                    ion_handle.handle = mMemInfo[i].handle;
+                    if (ioctl(mMemInfo[i].main_ion_fd, ION_IOC_FREE, &ion_handle) < 0) {
+                        ALOGE("ion free failed");
+                    }
+                    close(mMemInfo[i].main_ion_fd);
+                    mBufferHandle[i] = NULL;
+                }
+                close(mMemInfo[cnt].main_ion_fd);
+                memset(&mMemInfo, 0, sizeof(mMemInfo));
+                ret = -ENOMEM;
+                goto end;
+            }
+        }
+        ALOGD("%s: idx = %d, fd = %d, size = %d, offset = %d",
+              __func__, cnt, mPrivateHandle[cnt]->fd,
+              mPrivateHandle[cnt]->size,
+              mPrivateHandle[cnt]->offset);
+        mMemInfo[cnt].fd =
+            mPrivateHandle[cnt]->fd;
+        mMemInfo[cnt].size =
+            mPrivateHandle[cnt]->size;
+        mMemInfo[cnt].handle = ion_info_fd.handle;
 
-    vaddr = mmap(NULL,
-            mMemInfo[mBufferCount].size,
-            PROT_READ | PROT_WRITE,
-            MAP_SHARED,
-            mMemInfo[mBufferCount].fd, 0);
-    if (vaddr == MAP_FAILED) {
-        ret = NO_MEMORY;
-    } else {
-        mPtr[mBufferCount] = vaddr;
-        mBufferCount++;
+        void *vaddr = mmap(NULL,
+                    mMemInfo[cnt].size,
+                    PROT_READ | PROT_WRITE,
+                    MAP_SHARED,
+                    mMemInfo[cnt].fd, 0);
+        if (vaddr == MAP_FAILED) {
+            for (int j = cnt-1; j >= 0; j --) {
+                munmap(mPtr[cnt], mMemInfo[cnt].size);
+                ret = -ENOMEM;
+                break;
+            }
+        } else
+            mPtr[cnt] = vaddr;
     }
+    mBufferCount = num_buffers;
 
 end:
     ALOGV(" %s : X ",__func__);
@@ -689,7 +712,7 @@ void QCamera3GrallocMemory::unregisterBuffers()
             ALOGE("ion free failed");
         }
         close(mMemInfo[cnt].main_ion_fd);
-        ALOGV("put buffer %d successfully", cnt);
+        ALOGD("put buffer %d successfully", cnt);
     }
     mBufferCount = 0;
     ALOGV(" %s : X ",__FUNCTION__);
@@ -829,26 +852,6 @@ void *QCamera3GrallocMemory::getPtr(int index) const
         return (void *)BAD_INDEX;
     }
     return mPtr[index];
-}
-
-/*===========================================================================
- * FUNCTION   : getBufferHandle
- *
- * DESCRIPTION: return framework pointer
- *
- * PARAMETERS :
- *   @index   : index of the buffer
- *
- * RETURN     : buffer ptr if match found
-                NULL if failed
- *==========================================================================*/
-void *QCamera3GrallocMemory::getBufferHandle(int index)
-{
-    if (index >= mBufferCount) {
-        ALOGE("index out of bound");
-        return NULL;
-    }
-    return mBufferHandle[index];
 }
 
 }; //namespace qcamera

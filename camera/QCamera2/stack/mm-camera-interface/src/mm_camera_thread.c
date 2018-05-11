@@ -32,7 +32,6 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/prctl.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <cam_semaphore.h>
@@ -46,8 +45,6 @@ typedef enum {
     MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED,
     /* poll entries updated */
     MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED_ASYNC,
-    /* commit updates */
-    MM_CAMERA_PIPE_CMD_COMMIT,
     /* exit */
     MM_CAMERA_PIPE_CMD_EXIT,
     /* max count */
@@ -213,8 +210,6 @@ static void mm_camera_poll_proc_pipe(mm_camera_poll_thread_t *poll_cb)
     read_len = read(poll_cb->pfds[0], &cmd_evt, sizeof(cmd_evt));
     CDBG("%s: read_fd = %d, read_len = %d, expect_len = %d cmd = %d",
          __func__, poll_cb->pfds[0], (int)read_len, (int)sizeof(cmd_evt), cmd_evt.cmd);
-    // read_len is unused if not debugging.
-    (void)read_len;
     switch (cmd_evt.cmd) {
     case MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED:
     case MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED_ASYNC:
@@ -256,9 +251,6 @@ static void mm_camera_poll_proc_pipe(mm_camera_poll_thread_t *poll_cb)
             mm_camera_poll_sig_done(poll_cb);
         break;
 
-    case MM_CAMERA_PIPE_CMD_COMMIT:
-        mm_camera_poll_sig_done(poll_cb);
-        break;
     case MM_CAMERA_PIPE_CMD_EXIT:
     default:
         mm_camera_poll_set_state(poll_cb, MM_CAMERA_POLL_TASK_STATE_STOPPED);
@@ -337,7 +329,6 @@ static void *mm_camera_poll_fn(mm_camera_poll_thread_t *poll_cb)
  *==========================================================================*/
 static void *mm_camera_poll_thread(void *data)
 {
-    prctl(PR_SET_NAME, (unsigned long)"mm_cam_poll_th", 0, 0, 0);
     mm_camera_poll_thread_t *poll_cb = (mm_camera_poll_thread_t *)data;
 
     /* add pipe read fd into poll first */
@@ -363,23 +354,6 @@ int32_t mm_camera_poll_thread_notify_entries_updated(mm_camera_poll_thread_t * p
 {
     /* send poll entries updated signal to poll thread */
     return mm_camera_poll_sig(poll_cb, MM_CAMERA_PIPE_CMD_POLL_ENTRIES_UPDATED);
-}
-
-/*===========================================================================
- * FUNCTION   : mm_camera_poll_thread_commit_updates
- *
- * DESCRIPTION: sync with all previously pending async updates
- *
- * PARAMETERS :
- *   @poll_cb : ptr to poll thread object
- *
- * RETURN     : int32_t type of status
- *              0  -- success
- *              -1 -- failure
- *==========================================================================*/
-int32_t mm_camera_poll_thread_commit_updates(mm_camera_poll_thread_t * poll_cb)
-{
-    return mm_camera_poll_sig(poll_cb, MM_CAMERA_PIPE_CMD_COMMIT);
 }
 
 /*===========================================================================
@@ -444,9 +418,7 @@ int32_t mm_camera_poll_thread_add_poll_fd(mm_camera_poll_thread_t * poll_cb,
  *   @handler   : stream handle if channel data polling thread,
  *                0 if event polling thread
  *
- * RETURN     : int32_t type of status
- *              0  -- success
- *              -1 -- failure
+ * RETURN     : none
  *==========================================================================*/
 int32_t mm_camera_poll_thread_del_poll_fd(mm_camera_poll_thread_t * poll_cb,
                                           uint32_t handler,
@@ -479,7 +451,6 @@ int32_t mm_camera_poll_thread_del_poll_fd(mm_camera_poll_thread_t * poll_cb,
     } else {
         CDBG_ERROR("%s: invalid handler %d (%d)",
                    __func__, handler, idx);
-        return -1;
     }
 
     return rc;
@@ -496,8 +467,8 @@ int32_t mm_camera_poll_thread_launch(mm_camera_poll_thread_t * poll_cb,
 
     poll_cb->poll_type = poll_type;
 
-    poll_cb->pfds[0] = -1;
-    poll_cb->pfds[1] = -1;
+    poll_cb->pfds[0] = 0;
+    poll_cb->pfds[1] = 0;
     rc = pipe(poll_cb->pfds);
     if(rc < 0) {
         CDBG_ERROR("%s: pipe open rc=%d\n", __func__, rc);
@@ -546,10 +517,10 @@ int32_t mm_camera_poll_thread_release(mm_camera_poll_thread_t *poll_cb)
     }
 
     /* close pipe */
-    if(poll_cb->pfds[0] >= 0) {
+    if(poll_cb->pfds[0]) {
         close(poll_cb->pfds[0]);
     }
-    if(poll_cb->pfds[1] >= 0) {
+    if(poll_cb->pfds[1]) {
         close(poll_cb->pfds[1]);
     }
 
@@ -558,8 +529,6 @@ int32_t mm_camera_poll_thread_release(mm_camera_poll_thread_t *poll_cb)
     memset(poll_cb, 0, sizeof(mm_camera_poll_thread_t));
 done:
     pthread_mutex_unlock(&constr_destr_lock);
-    poll_cb->pfds[0] = -1;
-    poll_cb->pfds[1] = -1;
     return rc;
 }
 
@@ -625,15 +594,6 @@ int32_t mm_camera_cmd_thread_launch(mm_camera_cmd_thread_t * cmd_thread,
                    (void *)cmd_thread);
     return rc;
 }
-
-int32_t mm_camera_cmd_thread_name(const char* name)
-{
-    int32_t rc = 0;
-    /* name the thread */
-    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
-    return rc;
-}
-
 
 int32_t mm_camera_cmd_thread_stop(mm_camera_cmd_thread_t * cmd_thread)
 {

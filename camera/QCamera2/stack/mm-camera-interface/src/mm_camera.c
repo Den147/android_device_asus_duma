@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -119,7 +119,6 @@ uint8_t mm_camera_util_chip_is_a_family(void)
 static void mm_camera_dispatch_app_event(mm_camera_cmdcb_t *cmd_cb,
                                          void* user_data)
 {
-    mm_camera_cmd_thread_name("mm_cam_event");
     int i;
     mm_camera_event_t *event = &cmd_cb->u.evt;
     mm_camera_obj_t * my_obj = (mm_camera_obj_t *)user_data;
@@ -248,23 +247,22 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
     snprintf(dev_name, sizeof(dev_name), "/dev/%s",
              mm_camera_util_get_dev_name(my_obj->my_hdl));
     sscanf(dev_name, "/dev/video%u", &cam_idx);
-    CDBG_HIGH("%s: dev name = %s, cam_idx = %d", __func__, dev_name, cam_idx);
+    CDBG_ERROR("%s: dev name = %s, cam_idx = %d", __func__, dev_name, cam_idx);
 
     do{
         n_try--;
-        errno = 0;
         my_obj->ctrl_fd = open(dev_name, O_RDWR | O_NONBLOCK);
         CDBG("%s:  ctrl_fd = %d, errno == %d", __func__, my_obj->ctrl_fd, errno);
-        if((my_obj->ctrl_fd >= 0) || (errno != EIO && errno != ETIMEDOUT) || (n_try <= 0 )) {
-            CDBG_HIGH("%s:  opened, break out while loop", __func__);
+        if((my_obj->ctrl_fd > 0) || (errno != EIO) || (n_try <= 0 )) {
+            CDBG_ERROR("%s:  opened, break out while loop", __func__);
             break;
         }
-        ALOGE("%s:Failed with %s error, retrying after %d milli-seconds",
-             __func__, strerror(errno), sleep_msec);
+        CDBG("%s:failed with I/O error retrying after %d milli-seconds",
+             __func__, sleep_msec);
         usleep(sleep_msec * 1000);
     }while (n_try > 0);
 
-    if (my_obj->ctrl_fd < 0) {
+    if (my_obj->ctrl_fd <= 0) {
         CDBG_ERROR("%s: cannot open control fd of '%s' (%s)\n",
                  __func__, dev_name, strerror(errno));
         rc = -1;
@@ -277,7 +275,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
         n_try--;
         my_obj->ds_fd = mm_camera_socket_create(cam_idx, MM_CAMERA_SOCK_TYPE_UDP);
         CDBG("%s:  ds_fd = %d, errno = %d", __func__, my_obj->ds_fd, errno);
-        if((my_obj->ds_fd >= 0) || (n_try <= 0 )) {
+        if((my_obj->ds_fd > 0) || (n_try <= 0 )) {
             CDBG("%s:  opened, break out while loop", __func__);
             break;
         }
@@ -286,7 +284,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
         usleep(sleep_msec * 1000);
     } while (n_try > 0);
 
-    if (my_obj->ds_fd < 0) {
+    if (my_obj->ds_fd <= 0) {
         CDBG_ERROR("%s: cannot open domain socket fd of '%s'(%s)\n",
                  __func__, dev_name, strerror(errno));
         rc = -1;
@@ -316,13 +314,13 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj)
     return rc;
 
 on_error:
-    if (my_obj->ctrl_fd >= 0) {
+    if (my_obj->ctrl_fd > 0) {
         close(my_obj->ctrl_fd);
-        my_obj->ctrl_fd = -1;
+        my_obj->ctrl_fd = 0;
     }
-    if (my_obj->ds_fd >= 0) {
+    if (my_obj->ds_fd > 0) {
         mm_camera_socket_close(my_obj->ds_fd);
-       my_obj->ds_fd = -1;
+       my_obj->ds_fd = 0;
     }
 
     /* we do not need to unlock cam_lock here before return
@@ -355,13 +353,13 @@ int32_t mm_camera_close(mm_camera_obj_t *my_obj)
     CDBG("%s : Close evt cmd Thread in Cam Close",__func__);
     mm_camera_cmd_thread_release(&my_obj->evt_thread);
 
-    if(my_obj->ctrl_fd >= 0) {
+    if(my_obj->ctrl_fd > 0) {
         close(my_obj->ctrl_fd);
-        my_obj->ctrl_fd = -1;
+        my_obj->ctrl_fd = 0;
     }
-    if(my_obj->ds_fd >= 0) {
+    if(my_obj->ds_fd > 0) {
         mm_camera_socket_close(my_obj->ds_fd);
-        my_obj->ds_fd = -1;
+        my_obj->ds_fd = 0;
     }
     pthread_mutex_destroy(&my_obj->msg_lock);
 

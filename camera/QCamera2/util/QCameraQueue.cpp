@@ -51,7 +51,6 @@ QCameraQueue::QCameraQueue()
     m_size = 0;
     m_dataFn = NULL;
     m_userData = NULL;
-    m_active = true;
 }
 
 /*===========================================================================
@@ -72,7 +71,6 @@ QCameraQueue::QCameraQueue(release_data_fn data_rel_fn, void *user_data)
     m_size = 0;
     m_dataFn = data_rel_fn;
     m_userData = user_data;
-    m_active = true;
 }
 
 /*===========================================================================
@@ -88,22 +86,6 @@ QCameraQueue::~QCameraQueue()
 {
     flush();
     pthread_mutex_destroy(&m_lock);
-}
-
-/*===========================================================================
- * FUNCTION   : init
- *
- * DESCRIPTION: Put the queue to active state (ready to enqueue and dequeue)
- *
- * PARAMETERS : None
- *
- * RETURN     : None
- *==========================================================================*/
-void QCameraQueue::init()
-{
-    pthread_mutex_lock(&m_lock);
-    m_active = true;
-    pthread_mutex_unlock(&m_lock);
 }
 
 /*===========================================================================
@@ -138,7 +120,6 @@ bool QCameraQueue::isEmpty()
  *==========================================================================*/
 bool QCameraQueue::enqueue(void *data)
 {
-    bool rc;
     camera_q_node *node =
         (camera_q_node *)malloc(sizeof(camera_q_node));
     if (NULL == node) {
@@ -150,16 +131,10 @@ bool QCameraQueue::enqueue(void *data)
     node->data = data;
 
     pthread_mutex_lock(&m_lock);
-    if (m_active) {
-        cam_list_add_tail_node(&node->list, &m_head.list);
-        m_size++;
-        rc = true;
-    } else {
-        free(node);
-        rc = false;
-    }
+    cam_list_add_tail_node(&node->list, &m_head.list);
+    m_size++;
     pthread_mutex_unlock(&m_lock);
-    return rc;
+    return true;
 }
 
 /*===========================================================================
@@ -175,7 +150,6 @@ bool QCameraQueue::enqueue(void *data)
  *==========================================================================*/
 bool QCameraQueue::enqueueWithPriority(void *data)
 {
-    bool rc;
     camera_q_node *node =
         (camera_q_node *)malloc(sizeof(camera_q_node));
     if (NULL == node) {
@@ -187,22 +161,16 @@ bool QCameraQueue::enqueueWithPriority(void *data)
     node->data = data;
 
     pthread_mutex_lock(&m_lock);
-    if (m_active) {
-        struct cam_list *p_next = m_head.list.next;
+    struct cam_list *p_next = m_head.list.next;
 
-        m_head.list.next = &node->list;
-        p_next->prev = &node->list;
-        node->list.next = p_next;
-        node->list.prev = &m_head.list;
+    m_head.list.next = &node->list;
+    p_next->prev = &node->list;
+    node->list.next = p_next;
+    node->list.prev = &m_head.list;
 
-        m_size++;
-        rc = true;
-    } else {
-        free(node);
-        rc = false;
-    }
+    m_size++;
     pthread_mutex_unlock(&m_lock);
-    return rc;
+    return true;
 }
 
 /*===========================================================================
@@ -224,18 +192,16 @@ void* QCameraQueue::dequeue(bool bFromHead)
     struct cam_list *pos = NULL;
 
     pthread_mutex_lock(&m_lock);
-    if (m_active) {
-        head = &m_head.list;
-        if (bFromHead) {
-            pos = head->next;
-        } else {
-            pos = head->prev;
-        }
-        if (pos != head) {
-            node = member_of(pos, camera_q_node, list);
-            cam_list_del_node(&node->list);
-            m_size--;
-        }
+    head = &m_head.list;
+    if (bFromHead) {
+        pos = head->next;
+    } else {
+        pos = head->prev;
+    }
+    if (pos != head) {
+        node = member_of(pos, camera_q_node, list);
+        cam_list_del_node(&node->list);
+        m_size--;
     }
     pthread_mutex_unlock(&m_lock);
 
@@ -263,28 +229,25 @@ void QCameraQueue::flush(){
     struct cam_list *pos = NULL;
 
     pthread_mutex_lock(&m_lock);
-    if (m_active) {
-        head = &m_head.list;
-        pos = head->next;
+    head = &m_head.list;
+    pos = head->next;
 
-        while(pos != head) {
-            node = member_of(pos, camera_q_node, list);
-            pos = pos->next;
-            cam_list_del_node(&node->list);
-            m_size--;
+    while(pos != head) {
+        node = member_of(pos, camera_q_node, list);
+        pos = pos->next;
+        cam_list_del_node(&node->list);
+        m_size--;
 
-            if (NULL != node->data) {
-                if (m_dataFn) {
-                    m_dataFn(node->data, m_userData);
-                }
-                free(node->data);
+        if (NULL != node->data) {
+            if (m_dataFn) {
+                m_dataFn(node->data, m_userData);
             }
-            free(node);
-
+            free(node->data);
         }
-        m_size = 0;
-        m_active = false;
+        free(node);
+
     }
+    m_size = 0;
     pthread_mutex_unlock(&m_lock);
 }
 
@@ -309,25 +272,23 @@ void QCameraQueue::flushNodes(match_fn match){
     }
 
     pthread_mutex_lock(&m_lock);
-    if (m_active) {
-        head = &m_head.list;
-        pos = head->next;
+    head = &m_head.list;
+    pos = head->next;
 
-        while(pos != head) {
-            node = member_of(pos, camera_q_node, list);
-            pos = pos->next;
-            if ( match(node->data, m_userData) ) {
-                cam_list_del_node(&node->list);
-                m_size--;
+    while(pos != head) {
+        node = member_of(pos, camera_q_node, list);
+        pos = pos->next;
+        if ( match(node->data, m_userData) ) {
+            cam_list_del_node(&node->list);
+            m_size--;
 
-                if (NULL != node->data) {
-                    if (m_dataFn) {
-                        m_dataFn(node->data, m_userData);
-                    }
-                    free(node->data);
+            if (NULL != node->data) {
+                if (m_dataFn) {
+                    m_dataFn(node->data, m_userData);
                 }
-                free(node);
+                free(node->data);
             }
+            free(node);
         }
     }
     pthread_mutex_unlock(&m_lock);

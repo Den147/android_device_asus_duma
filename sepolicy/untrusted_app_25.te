@@ -1,2 +1,0 @@
-#
-allow untrusted_app_25 sysfs:file read;

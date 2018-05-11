@@ -37,7 +37,6 @@ extern "C" {
 //#include "QCamera3HWI.h"
 #include "QCameraQueue.h"
 #include "QCameraCmdThread.h"
-#include "QCamera3HALHeader.h"
 
 namespace qcamera {
 
@@ -53,14 +52,13 @@ typedef struct {
     uint32_t client_hdl;             // handle of jpeg client (obtained when open jpeg)
     mm_camera_super_buf_t *src_frame;// source frame (need to be returned back to kernel after done)
     mm_camera_super_buf_t *src_reproc_frame; // original source frame for reproc if not NULL
-    metadata_buffer_t *metadata;
-    jpeg_settings_t *jpeg_settings;
+    mm_camera_super_buf_t *aux_frame;// source frame but from different stream
+    QCamera3Channel *aux_channel;
 } qcamera_jpeg_data_t;
 
 typedef struct {
     uint32_t jobId;                  // job ID
     mm_camera_super_buf_t *src_frame;// source frame (need to be returned back to kernel after done)
-    metadata_buffer_t *metadata;
 } qcamera_pp_data_t;
 
 typedef struct {
@@ -73,7 +71,7 @@ typedef struct {
     mm_jpeg_output_t out_data;         // ptr to jpeg output buf
 } qcamera_jpeg_evt_payload_t;
 
-#define MAX_EXIF_TABLE_ENTRIES 22
+#define MAX_EXIF_TABLE_ENTRIES 24
 class QCamera3Exif
 {
 public:
@@ -98,17 +96,16 @@ public:
     QCamera3PostProcessor(QCamera3PicChannel *ch_ctrl);
     virtual ~QCamera3PostProcessor();
 
-    int32_t init(QCamera3Memory *mMemory,
-                 jpeg_encode_callback_t jpeg_cb, void *user_data);
+    int32_t init(jpeg_encode_callback_t jpeg_cb, void *user_data);
     int32_t deinit();
-    int32_t start(QCamera3Channel *pInputChannel,
-                  metadata_buffer_t *metadata);
+    int32_t start(QCamera3Memory *mMemory, int index, QCamera3PicChannel *pSrcChannel);
     int32_t stop();
     int32_t processData(mm_camera_super_buf_t *frame);
     int32_t processRawData(mm_camera_super_buf_t *frame);
     int32_t processPPData(mm_camera_super_buf_t *frame);
-    int32_t processPPMetadata(metadata_buffer_t *reproc_meta);
-    int32_t processJpegSettingData(jpeg_settings_t *jpeg_settings);
+    int32_t processAuxiliaryData(mm_camera_buf_def_t *frame,
+        QCamera3Channel* pAuxiliaryChannel);
+    int32_t processPPMetadata(mm_camera_super_buf_t *frame);
     int32_t processJpegEvt(qcamera_jpeg_evt_payload_t *evt);
     qcamera_jpeg_data_t *findJpegJobByJobId(uint32_t jobId);
     void releaseJpegJobData(qcamera_jpeg_data_t *job);
@@ -117,9 +114,9 @@ private:
     int32_t sendEvtNotify(int32_t msg_type, int32_t ext1, int32_t ext2);
     mm_jpeg_color_format getColorfmtFromImgFmt(cam_format_t img_fmt);
     mm_jpeg_format_t getJpegImgTypeFromImgFmt(cam_format_t img_fmt);
-    int32_t getJpegEncodeConfig(mm_jpeg_encode_params_t& encode_parm,
+    int32_t getJpegEncodingConfig(mm_jpeg_encode_params_t& encode_parm,
                                   QCamera3Stream *main_stream,
-                                  jpeg_settings_t *jpeg_settings);
+                                  QCamera3Stream *thumb_stream);
     int32_t encodeData(qcamera_jpeg_data_t *jpeg_job_data,
                        uint8_t &needNewSess);
     void releaseSuperBuf(mm_camera_super_buf_t *super_buf);
@@ -129,8 +126,6 @@ private:
     static void releaseJpegData(void *data, void *user_data);
     static void releasePPInputData(void *data, void *user_data);
     static void releaseOngoingPPData(void *data, void *user_data);
-    static void releaseMetaData(void *data, void *user_data);
-    static void releaseJpegSetting(void *data, void *user_data);
 
     static void *dataProcessRoutine(void *data);
 
@@ -145,6 +140,7 @@ private:
     QCamera3Exif *             m_pJpegExifObj;
     int8_t                     m_bThumbnailNeeded;
     QCamera3Memory             *mJpegMem;
+    int                        mJpegMemIndex;
     QCamera3ReprocessChannel *  m_pReprocChannel;
 
     QCameraQueue m_inputPPQ;            // input queue for postproc
@@ -153,10 +149,9 @@ private:
     QCameraQueue m_ongoingJpegQ;        // ongoing jpeg job queue
     QCameraQueue m_inputRawQ;           // input raw job queue
     QCameraQueue m_inputMetaQ;          //input meta queue
-    QCameraQueue m_jpegSettingsQ;        // input jpet setting queue
     QCameraCmdThread m_dataProcTh;      // thread for data processing
 
-    pthread_mutex_t mReprocJobLock;
+     pthread_mutex_t mReprocJobLock;
 };
 
 }; // namespace qcamera
