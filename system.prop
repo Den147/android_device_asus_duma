@@ -65,6 +65,9 @@ debug.composition.type=gpu
 # Display
 persist.hwc.mdpcomp.enable=true
 
+# Vendor Security patch level
+ro.lineage.build.vendor_security_patch=2015-08-05
+
 # Preferred network type - LTE, WCDMA, GSM
 ro.telephony.default_network=9
 ro.telephony.get_imsi_from_sim=true
