@@ -140,7 +140,6 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    Snap \
     camera.duma 
 
 PRODUCT_PACKAGES += \
