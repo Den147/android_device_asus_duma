@@ -5,6 +5,9 @@ type netmgrd_exec, exec_type, file_type;
 # Started by init
 init_daemon_domain(netmgrd)
 
+# Allow a base set of permissions required for network access.
+net_domain(netmgrd)
+
 # Starts as (root,radio) changes to (radio,radio)
 allow netmgrd self:capability { setuid setgid net_admin net_raw };
 
@@ -39,3 +42,6 @@ allow netmgrd proc_net:dir r_dir_perms;
 set_prop(netmgrd, radio_prop)
 auditallow netmgrd radio_prop:property_service set;
 set_prop(netmgrd, net_radio_prop)
+
+# Access to /proc/sys/net/*
+r_dir_file(netmgrd, proc_net)
