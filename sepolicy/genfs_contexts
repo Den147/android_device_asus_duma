@@ -21,6 +21,8 @@ genfscon sysfs /devices/system/soc/soc0                                 u:object
 
 # debugfs
 genfscon debugfs /kgsl/proc                                             u:object_r:debugfs_kgsl:s0
+genfscon debugfs /rpm_stats 						u:object_r:debugfs_rpm:s0
+genfscon debugfs /rpm_master_stats 					u:object_r:debugfs_rpm:s0
 
 # Graphics
 genfscon sysfs /devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/gpuclk                 u:object_r:sysfs_graphics:s0
