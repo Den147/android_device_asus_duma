@@ -143,9 +143,8 @@ ifeq ($(HOST_OS),linux)
   endif
 endif
 
-# Native suppor NTFS &EXFAT Filesystems
-TARGET_USES_EXFAT := true
-KERNEL_EXFAT_MODULE_NAME := "exfat"
+# Native suppor NTFS & SDFAT/EXFAT Filesystems
+TARGET_EXFAT_DRIVER := sdfat
 TARGET_USES_NTFS := true
 KERNEL_NTFS_MODULE_NAME := "ntfs"
 
