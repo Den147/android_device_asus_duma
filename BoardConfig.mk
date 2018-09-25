@@ -45,6 +45,9 @@ TARGET_KERNEL_CONFIG := elementalx_defconfig
 #KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
 #KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
+# QCOM Hardware
+BOARD_USES_QCOM_HARDWARE := true
+
 BOARD_USES_ALSA_AUDIO:= true
 BOARD_USES_LEGACY_ALSA_AUDIO:= false
 BOARD_USES_FLUENCE_INCALL := true
