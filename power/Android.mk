@@ -25,12 +25,11 @@ LOCAL_SRC_FILES := service.cpp \
 LOCAL_CFLAGS += -DWLAN_POWER_STAT=\"$(TARGET_WLAN_POWER_STAT)\"
 
 
-LOCAL_SHARED_LIBRARIES := liblog libcutils libhidlbase libhidltransport libhardware libutils android.hardware.power@1.0 vendor.lineage.power@1.0
+LOCAL_SHARED_LIBRARIES := liblog libcutils libhidlbase libhidltransport libhardware libutils android.hardware.power@1.0
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_OWNER := qcom
 LOCAL_MODULE := android.hardware.power@1.0-service-qti
 LOCAL_INIT_RC := android.hardware.power@1.0-service-qti.rc
 LOCAL_SHARED_LIBRARIES += android.hardware.power@1.0
-LOCAL_SHARED_LIBRARIES += vendor.lineage.power@1.0
 LOCAL_PROPRIETARY_MODULE := true
 include $(BUILD_EXECUTABLE)
