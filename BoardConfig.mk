@@ -178,8 +178,8 @@ HAVE_ADRENO_SOURCE:= false
 # Enable Minikin text layout engine (will be the default soon)
 USE_MINIKIN := true
 
-# Include an expanded selection of fonts
-EXTENDED_FONT_FOOTPRINT := true
+# Fonts
+SMALLER_FONT_FOOTPRINT := true
 
 
 # Recovery
