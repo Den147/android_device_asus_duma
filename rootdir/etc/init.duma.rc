@@ -140,6 +140,9 @@ on boot
     write /proc/sys/net/core/wmem_max  2097152
 
 on post-fs
+    # Allow writing to the kernel trace log.
+    chmod 0222 /sys/kernel/debug/tracing/trace_marker
+
     # Start devices by sysfs trigger
     start devstart_sh
 
