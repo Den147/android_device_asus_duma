@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-import init.duma.usb.rc
-import init.duma.power.rc
+import /vendor/etc/init/hw/init.duma.usb.rc
+import /vendor/etc/init/hw/init.duma.power.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
