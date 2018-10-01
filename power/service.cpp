@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "android.hardware.power@1.0-service-qti"
+#define LOG_TAG "android.hardware.power@1.0-service.qcom"
 
 #include <android/log.h>
 #include <hidl/HidlTransportSupport.h>

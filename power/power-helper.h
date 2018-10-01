@@ -36,57 +36,9 @@ extern "C" {
 
 #include "hardware/power.h"
 
-#ifdef LEGACY_STATS
-enum platform_param_id {
-    VLOW_COUNT = 0,
-    ACCUMULATED_VLOW_TIME,
-    VMIN_COUNT,
-    ACCUMULATED_VMIN_TIME,
-    RPM_PARAM_COUNT,
-
-    XO_ACCUMULATED_DURATION_APSS = RPM_PARAM_COUNT,
-    XO_COUNT_APSS,
-    XO_ACCUMULATED_DURATION_MPSS,
-    XO_COUNT_MPSS,
-    XO_ACCUMULATED_DURATION_ADSP,
-    XO_COUNT_ADSP,
-    XO_ACCUMULATED_DURATION_SLPI,
-    XO_COUNT_SLPI,
-
-    //Don't add any lines after that line
-    PLATFORM_PARAM_COUNT
-};
-#endif
-
-enum stats_type {
-    //Platform Stats
-    RPM_MODE_XO = 0,
-    RPM_MODE_VMIN,
-    RPM_MODE_MAX,
-    XO_VOTERS_START = RPM_MODE_MAX,
-    VOTER_APSS = XO_VOTERS_START,
-    VOTER_MPSS,
-    VOTER_ADSP,
-    VOTER_SLPI,
-    MAX_PLATFORM_STATS,
-
-};
-
-enum subsystem_type {
-  //Don't add any lines after this line
-    SUBSYSTEM_COUNT
-};
-
-#define PLATFORM_SLEEP_MODES_COUNT RPM_MODE_MAX
-#define XO_VOTERS (MAX_PLATFORM_STATS - XO_VOTERS_START)
-#define MAX_RPM_PARAMS 2
-#define VMIN_VOTERS 0
-
-
 void power_init(void);
 void power_hint(power_hint_t hint, void *data);
 void power_set_interactive(int on);
-int extract_platform_stats(uint64_t *list);
 
 #ifdef __cplusplus
 }
