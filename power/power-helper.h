@@ -36,7 +36,7 @@ extern "C" {
 
 #include "hardware/power.h"
 
-
+#ifdef LEGACY_STATS
 enum platform_param_id {
     VLOW_COUNT = 0,
     ACCUMULATED_VLOW_TIME,
@@ -56,7 +56,7 @@ enum platform_param_id {
     //Don't add any lines after that line
     PLATFORM_PARAM_COUNT
 };
-
+#endif
 
 enum stats_type {
     //Platform Stats

@@ -72,7 +72,7 @@ Return<void> Power::getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_c
         goto done;
     }
 
-
+#ifdef LEGACY_STATS
     states.resize(RPM_MODE_MAX);
 
     /* Update statistics for XO_shutdown */
@@ -117,7 +117,7 @@ Return<void> Power::getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_c
     state->supportedOnlyInSuspend = false;
     state->voters.resize(VMIN_VOTERS);
     //Note: No filling of state voters since VMIN_VOTERS = 0
-
+#endif
 done:
     _hidl_cb(states, Status::SUCCESS);
     return Void();
