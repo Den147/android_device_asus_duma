@@ -14,8 +14,12 @@
 # limitations under the License.
 #
 
+# Inherit from those products. Most specific first.
+$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
+
 # Inherit from duma device configuration
-$(call inherit-product, device/asus/duma/full_duma.mk)
+$(call inherit-product, device/asus/duma/device.mk)
 
 # Inherit some common LineageOS stuff.
 $(call inherit-product, vendor/lineage/config/common_mini_tablet_wifionly.mk)
@@ -23,8 +27,13 @@ $(call inherit-product, vendor/lineage/config/common_mini_tablet_wifionly.mk)
 # Inherit telephony stuff
 $(call inherit-product, vendor/lineage/config/telephony.mk)
 
+# Device identifier. This must come after all inclusions
+TARGET_VENDOR := Asus
+PRODUCT_DEVICE := duma
 PRODUCT_NAME := lineage_duma
-BOARD_VENDOR := Asus
+PRODUCT_BRAND := Asus
+PRODUCT_MODEL := ME302KL
+PRODUCT_MANUFACTURER := Asus
 
 PRODUCT_GMS_CLIENTID_BASE := android-asus
 
