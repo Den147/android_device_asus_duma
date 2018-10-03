@@ -11,3 +11,6 @@ allow hal_audio_default audio_data_file:dir search;
 unix_socket_connect(hal_audio_default, qmuxd, qmux)
 allow hal_audio_default qmuxd_socket:dir w_dir_perms;
 allow hal_audio_default qmuxd_socket:sock_file { create setattr };
+
+# Allow accessing power HAL
+allow hal_audio_default hal_power_hwservice:hwservice_manager find;
