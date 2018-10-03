@@ -171,7 +171,7 @@ USE_DEVICE_SPECIFIC_CAMERA:= true
 HAVE_ADRENO_SOURCE:= false
 
 # SELinux
-# BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy
+BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy
 #include device/qcom/sepolicy/sepolicy.mk
 
 # Enable Minikin text layout engine (will be the default soon)
