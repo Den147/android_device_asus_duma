@@ -142,6 +142,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     camera.duma 
 
+PRODUCT_COPY_FILES += \
+    device/asus/duma/configs/external_camera_config.xml:$(TARGET_COPY_OUT_VENDOR)/etc/external_camera_config.xml
+
 PRODUCT_PACKAGES += \
     hostapd_default.conf
 
