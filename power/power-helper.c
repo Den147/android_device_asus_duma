@@ -38,6 +38,9 @@
 
 #include "power-helper.h"
 
+// Custom Lineage hints
+const static power_hint_t POWER_HINT_SET_PROFILE = (power_hint_t)0x00000111;
+
 #define USINSEC 1000000L
 #define NSINUS 1000L
 
