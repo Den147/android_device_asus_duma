@@ -22,10 +22,20 @@ LOCAL_SRC_FILES := service.cpp \
                    Power.cpp \
                    power-helper.c
 
+ifeq ($(TARGET_HAS_LEGACY_POWER_STATS),true)
+   LOCAL_CFLAGS += -DLEGACY_STATS
+endif
+
+ifneq ($(TARGET_WLAN_POWER_STAT),)
+   LOCAL_CFLAGS += -DWLAN_POWER_STAT=\"$(TARGET_WLAN_POWER_STAT)\"
+endif
+
 LOCAL_SHARED_LIBRARIES := liblog libcutils libhidlbase libhidltransport libhardware libutils android.hardware.power@1.0
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_OWNER := qcom
-LOCAL_MODULE := android.hardware.power@1.0-service.qcom
-LOCAL_INIT_RC := android.hardware.power@1.0-service.qcom.rc
+LOCAL_MODULE := android.hardware.power@1.0-service-qti
+LOCAL_INIT_RC := android.hardware.power@1.0-service-qti.rc
+LOCAL_SHARED_LIBRARIES += android.hardware.power@1.0
+LOCAL_CFLAGS += -DV1_0_HAL
 LOCAL_PROPRIETARY_MODULE := true
 include $(BUILD_EXECUTABLE)
