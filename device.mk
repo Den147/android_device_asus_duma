@@ -244,6 +244,7 @@ PRODUCT_PACKAGES += \
     libOmxVdec \
     libOmxVenc \
     libOmxCore \
+    libmm-omxcore \
     libstagefrighthw \
     libc2dcolorconvert \
     libdivxdrmdecrypt
