@@ -2,6 +2,9 @@
 vendor.qcom.bluetooth.soc=pronto
 ro.qualcomm.bt.hci_transport=smd
 
+# Load dummy initial BT MAC address
+ro.boot.btmacaddr=00:00:00:00:00:00
+
 # Audio
 # Monitor device rotation for speaker channel swap
 ro.audio.monitorRotation=true
