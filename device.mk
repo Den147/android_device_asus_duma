@@ -120,13 +120,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service
 
-
-# Preset for ITALY
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.sys.timezone=Europe/Rome \
-    persist.sys.language=it \
-    persist.sys.country=IT
-
 # CABL
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.qualcomm.cabl=1 \
