@@ -101,3 +101,7 @@ on property:recovery.perf.mode=0
 on property:dev.bootcomplete=1
     setprop sys.io.scheduler bfq
     start mpdecision
+
+on property:sys.boot_completed=1
+    # USB fast charge mode
+    write /sys/kernel/fast_charge/force_fast_charge 1
