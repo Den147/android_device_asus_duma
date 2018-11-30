@@ -32,6 +32,10 @@ PRODUCT_AAPT_PREF_CONFIG := xhdpi
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240
 
+# Debugging
+PRODUCT_PACKAGES += \
+	MatLog
+
 # A list of dpis to select prebuilt apk, in precedence order.
 PRODUCT_AAPT_PREBUILT_DPI := hdpi
 
@@ -137,7 +141,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     camera.disable_treble=true
 
 # Charger
-#WITH_LINEAGE_CHARGER := false
+WITH_LINEAGE_CHARGER := false
 PRODUCT_PACKAGES += \
     charger_res_images \
     charger_touch
