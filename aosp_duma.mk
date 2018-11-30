@@ -21,16 +21,15 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 # Inherit from duma device configuration
 $(call inherit-product, device/asus/duma/device.mk)
 
-# Inherit some common LineageOS stuff.
-$(call inherit-product, vendor/lineage/config/common_mini_tablet_wifionly.mk)
-
-# Inherit telephony stuff
-$(call inherit-product, vendor/lineage/config/telephony.mk)
+# Inherit some common PixelExperience stuff.
+TARGET_BOOT_ANIMATION_RES := 1080
+TARGET_GAPPS_ARCH := arm
+$(call inherit-product, vendor/aosp/config/common.mk)
 
 # Device identifier. This must come after all inclusions
 TARGET_VENDOR := Asus
 PRODUCT_DEVICE := duma
-PRODUCT_NAME := lineage_duma
+PRODUCT_NAME := aosp_duma
 PRODUCT_BRAND := Asus
 PRODUCT_MODEL := MeMo Pad FHD 10 LTE
 PRODUCT_MANUFACTURER := Asus

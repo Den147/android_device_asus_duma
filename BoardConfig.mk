@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+WITHOUT_CHECK_API := true
 DEVICE_PATH := device/asus/duma
 
 # Variants
@@ -36,13 +36,12 @@ TARGET_CPU_VARIANT := krait
 BOARD_KERNEL_IMAGE_NAME := zImage
 BOARD_KERNEL_BASE := 0x80200000
 BOARD_KERNEL_PAGESIZE := 2048
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma androidboot.selinux=permissive user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3
-BOARD_KERNEL_CMDLINE += vmalloc=340M
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=duma user_debug=31 msm_rtb.filter=0x3F ehci-hcd.park=3
+BOARD_KERNEL_CMDLINE += vmalloc=340M androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
-TARGET_KERNEL_SOURCE := kernel/asus/duma
-TARGET_KERNEL_CONFIG := elementalx_defconfig
-#TARGET_KERNEL_CONFIG := duma-lineageos_defconfig
-#KERNEL_TOOLCHAIN := /home/neko/los15/linaro/bin
+TARGET_KERNEL_SOURCE := kernel/asus/Sweet_kernel
+TARGET_KERNEL_CONFIG := sweet_defconfig
+#KERNEL_TOOLCHAIN := /home/neko/SaberNaro-arm-eabi-4.9-master/bin
 #KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
 # QCOM Hardware
@@ -67,13 +66,18 @@ TARGET_BOARD_SUFFIX := _32
 
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth
 
-# QCOM HALs
-#TARGET_QCOM_AUDIO_VARIANT := caf-msm8960
-#TARGET_QCOM_MEDIA_VARIANT := caf-msm8974
-#TARGET_QCOM_DISPLAY_VARIANT := caf-msm8960
-
-# RIL
+# Qualcomm
 TARGET_RIL_VARIANT := caf
+
+# DT2W
+TARGET_TAP_TO_WAKE_NODE := "/sys/android_touch/doubletap2wake"
+
+# Charger 
+#BOARD_CHARGER_DISABLE_INIT_BLANK := true
+#BOARD_CHARGER_ENABLE_SUSPEND := true
+#BOARD_HEALTHD_CUSTOM_CHARGER_RES := $(PLATFORM_PATH)/charger/images
+#BACKLIGHT_PATH := /sys/class/leds/lcd-backlight/brightness
+#RED_LED_PATH := /sys/class/leds/led:red/brightness
 
 # Audio
 AUDIO_FEATURE_ENABLED_VORBIS_OFFLOAD := true
@@ -85,10 +89,8 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
 # Graphics
 SF_START_GRAPHICS_ALLOCATOR_SERVICE := true
-TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02000000U
 
-# Wifi Display
-TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS := true
+MALLOC_SVELTE := true
 
 # Vendor Interface Manifest
 DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
@@ -106,11 +108,12 @@ WIFI_DRIVER_FW_PATH_AP  := "ap"
 TARGET_WLAN_POWER_STAT := "/d/wlan_wcnss/power_stats"
 
 #BOARD_USES_HGL := true
-#BOARD_USES_OVERLAY := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 USE_OPENGL_RENDERER := true
 PRESENT_TIME_OFFSET_FROM_VSYNC_NS := 3200000
 TARGET_USES_ION := true
+#TARGET_USES_NEW_ION_API := true
+#TARGET_USES_HWC2 := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_SF_BYPASS := true
 
@@ -187,7 +190,6 @@ USE_MINIKIN := true
 EXCLUDE_SERIF_FONTS := true
 SMALLER_FONT_FOOTPRINT := true
 
-
 # Recovery
 TARGET_RECOVERY_DENSITY := hdpi
 TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.duma
@@ -197,9 +199,6 @@ TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)/releasetools
 
 # Properties
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
-
-# This is needed to fix Healthd Hidl build
-WITH_LINEAGE_CHARGER := false
 
 # Device Manifest
 DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml

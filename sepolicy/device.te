@@ -9,7 +9,7 @@ type kickstart_device, dev_type;
 type smd_device, dev_type;
 
 # SMD device, used by rild
-type smd_cmx_qmi_device, dev_type;
+type smd_cxm_qmi_device, dev_type;
 
 # Radio related block device
 type efs_block_device, dev_type;

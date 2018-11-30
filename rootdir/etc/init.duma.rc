@@ -142,6 +142,10 @@ on boot
     write /proc/sys/net/core/rmem_max  2097152
     write /proc/sys/net/core/wmem_max  2097152
 
+	# DT2W
+    chmod 0666 /sys/android_touch/doubletap2wake
+    chown system system /sys/android_touch/doubletap2wake
+
 on post-fs
     # Allow writing to the kernel trace log.
     chmod 0222 /sys/kernel/debug/tracing/trace_marker
@@ -344,6 +348,7 @@ service mpdecision /vendor/bin/mpdecision --avg_comp
     class main
     user root
     group root readproc system
+	disabled
 
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
@@ -396,3 +401,4 @@ on property:ro.boot.baseband=mdm
 on property:ro.boot.baseband=apq
     setprop ro.radio.noril yes
     stop ril-daemon
+

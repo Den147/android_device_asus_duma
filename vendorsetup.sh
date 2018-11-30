@@ -1,3 +1,3 @@
-add_lunch_combo lineage_duma-eng
-add_lunch_combo lineage_duma-user
-add_lunch_combo lineage_duma-userdebug
+add_lunch_combo aosp_duma-eng
+add_lunch_combo aosp_duma-user
+add_lunch_combo aosp_duma-userdebug

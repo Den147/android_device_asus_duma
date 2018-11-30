@@ -53,12 +53,15 @@ genfscon sysfs /devices/platform/msm_hsusb/gadget/lun0/                         
 genfscon sysfs /devices/platform/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0/queue/iosched/slice_idle u:object_r:sysfs_block_iosched:s0
 genfscon sysfs /devices/platform/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0/queue/scheduler          u:object_r:sysfs_block_iosched:s0
 genfscon sysfs /devices/virtual/bdi/179:0/read_ahead_kb                                                    u:object_r:sysfs_block_read_ahead_kb:s0
+genfscon sysfs /devices/platform/msm_sdcc.1/mmc_host/mmc0/mmc0:0001/block/mmcblk0/stat u:object_r:sysfs_disk_stat:s0
 
 # thermald
 genfscon sysfs /devices/virtual/thermal                                          u:object_r:sysfs_thermal:s0
 genfscon sysfs /devices/platform/msm_ssbi.0/pm8921-core/pm8xxx-adc/batt_therm    u:object_r:sysfs_thermal:s0
 genfscon sysfs /module/msm_thermal                                               u:object_r:sysfs_thermal:s0
 
-
+# healthd
+genfscon sysfs /devices/i2c-0/0-0055						u:object_r:sysfs_batteryinfo:s0
+genfscon sysfs /devices/i2c-0/0-006a						u:object_r:sysfs_batteryinfo:s0
 
 

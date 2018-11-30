@@ -19,3 +19,5 @@ allow init {
     sysfs_usb
     sysfs_wlan_fwpath
 }:file setattr;
+
+allow init sysfs_dt2w:file { rw_file_perms setattr };

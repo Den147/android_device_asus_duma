@@ -12,4 +12,4 @@ allow rild radio_data_file:file create_file_perms;
 # dev_type
 allow rild device:dir rw_dir_perms;
 allow rild device:file create_file_perms;
-allow rild smd_cmx_qmi_device:chr_file w_file_perms;
+allow rild smd_cxm_qmi_device:chr_file { open write };

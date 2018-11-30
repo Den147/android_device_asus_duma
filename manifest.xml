@@ -82,7 +82,7 @@
     </hal>
     <hal format="hidl">
         <name>android.hardware.graphics.composer</name>
-		<transport arch="32">passthrough</transport>
+	<transport arch="32">passthrough</transport>
         <version>2.1</version>
     </hal>
     <hal format="hidl">
@@ -155,7 +155,7 @@
     <hal format="hidl">
         <name>android.hardware.wifi</name>
         <transport>hwbinder</transport>
-        <version>1.2</version>
+        <version>1.1</version>
         <interface>
             <name>IWifi</name>
             <instance>default</instance>
@@ -164,7 +164,7 @@
     <hal format="hidl">
         <name>android.hardware.wifi.supplicant</name>
         <transport>hwbinder</transport>
-        <version>1.1</version>
+        <version>1.0</version>
         <interface>
             <name>ISupplicant</name>
             <instance>default</instance>
@@ -173,7 +173,7 @@
  <hal format="hidl">
         <name>android.hardware.radio</name>
         <transport>hwbinder</transport>
-        <version>1.1</version>
+        <version>1.0</version>
         <interface>
             <name>IRadio</name>
             <instance>slot1</instance>
@@ -216,13 +216,4 @@
 	    <instance>default</instance>
         </interface>
   </hal>
-<hal format="hidl">
-        <name>vendor.lineage.power</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>ILineagePower</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
 </manifest>

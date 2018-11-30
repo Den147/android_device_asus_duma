@@ -20,12 +20,8 @@ $(call inherit-product-if-exists, vendor/asus/duma/duma-vendor.mk)
 # Dalvik/HWUI
 $(call inherit-product, frameworks/native/build/tablet-10in-xhdpi-2048-dalvik-heap.mk)
 
-# Set LineageOS build tipe
-CM_BUILDTYPE := NIGHTLY
-
 DEVICE_PACKAGE_OVERLAYS += \
-    device/asus/duma/overlay \
-    device/asus/duma/overlay-lineage
+    device/asus/duma/overlay 
 
 PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
@@ -57,10 +53,6 @@ PRODUCT_PACKAGES := \
     CarrierConfig \
     BasicSmsReceiver
 
-
-# Catlog
-PRODUCT_PACKAGES += \
-    CatLog
 
 PRODUCT_PROPERTY_OVERRIDES += \
     rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
@@ -120,11 +112,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service
 
-# CABL
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.qualcomm.cabl=1 \
-    hw.cabl.level=Auto
-
 # Camera HILD
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
@@ -150,6 +137,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     camera.disable_treble=true
 
 # Charger
+#WITH_LINEAGE_CHARGER := false
 PRODUCT_PACKAGES += \
     charger_res_images \
     charger_touch
@@ -269,7 +257,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.power@1.0-service-qti
  
-
 # Ramdisk
 PRODUCT_PACKAGES += \
     fstab.duma \
