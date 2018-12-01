@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-WITHOUT_CHECK_API := true
 DEVICE_PATH := device/asus/duma
 
 # Variants
@@ -89,8 +88,7 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
 # Graphics
 SF_START_GRAPHICS_ALLOCATOR_SERVICE := true
-
-MALLOC_SVELTE := true
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02000000U
 
 # Vendor Interface Manifest
 DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
@@ -112,7 +110,7 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 USE_OPENGL_RENDERER := true
 PRESENT_TIME_OFFSET_FROM_VSYNC_NS := 3200000
 TARGET_USES_ION := true
-#TARGET_USES_NEW_ION_API := true
+TARGET_USES_NEW_ION_API := true
 #TARGET_USES_HWC2 := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_SF_BYPASS := true
