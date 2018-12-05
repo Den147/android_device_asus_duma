@@ -344,28 +344,6 @@ static void process_video_encode_hint(void *metadata)
     }
 }
 
-
-static void touch_boost()
-{
-    int rc;
-    pid_t client;
-    char data[MAX_LENGTH];
-
-    if (client_sockfd < 0) {
-        ALOGE("%s: boost socket not created", __func__);
-        return;
-    }
-
-    client = getpid();
-
-    snprintf(data, MAX_LENGTH, "1:%d", client);
-    rc = sendto(client_sockfd, data, strlen(data), 0,
-        (const struct sockaddr *)&client_addr, sizeof(struct sockaddr_un));
-    if (rc < 0) {
-        ALOGE("%s: failed to send: %s", __func__, strerror(errno));
-    }
-}
-
 static void set_feature(struct power_module *module, feature_t feature, int state)
 {
         ALOGI("set_feature");
