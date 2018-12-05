@@ -344,12 +344,6 @@ service thermald /vendor/bin/thermald
     user root
     group radio system
 
-service mpdecision /vendor/bin/mpdecision --avg_comp
-    class main
-    user root
-    group root readproc system
-	disabled
-
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
     user camera
