@@ -370,7 +370,6 @@ void power_set_interactive(int on)
     ALOGV("%s %s", __func__, (on ? "ON" : "OFF"));
     if (on) {
         sync_thread(0);
-        touch_boost();
     } else {
         sync_thread(1);
     }
@@ -384,7 +383,6 @@ void power_hint(power_hint_t hint, void *data)
         case POWER_HINT_INTERACTION:
         case POWER_HINT_LAUNCH:
             ALOGV("POWER_HINT_INTERACTION");
-            touch_boost();
             break;
 #if 0
         case POWER_HINT_VSYNC:
