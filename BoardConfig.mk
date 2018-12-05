@@ -74,7 +74,7 @@ TARGET_TAP_TO_WAKE_NODE := "/sys/android_touch/doubletap2wake"
 # Charger 
 #BOARD_CHARGER_DISABLE_INIT_BLANK := true
 #BOARD_CHARGER_ENABLE_SUSPEND := true
-#BOARD_HEALTHD_CUSTOM_CHARGER_RES := $(PLATFORM_PATH)/charger/images
+BOARD_HEALTHD_CUSTOM_CHARGER_RES := $(PLATFORM_PATH)/charger/images
 #BACKLIGHT_PATH := /sys/class/leds/lcd-backlight/brightness
 #RED_LED_PATH := /sys/class/leds/led:red/brightness
 
@@ -110,8 +110,6 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 USE_OPENGL_RENDERER := true
 PRESENT_TIME_OFFSET_FROM_VSYNC_NS := 3200000
 TARGET_USES_ION := true
-TARGET_USES_NEW_ION_API := true
-#TARGET_USES_HWC2 := true
 TARGET_USES_OVERLAY := true
 TARGET_USES_SF_BYPASS := true
 
