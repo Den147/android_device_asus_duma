@@ -11,9 +11,6 @@ genfscon sysfs /devices/platform/msm_fb.591617/leds/lcd-backlight               
 genfscon sysfs /module/pm2/modes                                        u:object_r:sysfs_mpdecision:s0
 genfscon sysfs /module/pm_8x60/modes                                    u:object_r:sysfs_mpdecision:s0
 
-genfscon proc /cpu/alignment                                                     u:object_r:proc_cpu_alignment:s0
-genfscon proc /last_kmsg                                                         u:object_r:proc_last_kmsg:s0
-genfscon proc /slabinfo                                                          u:object_r:proc_slabinfo:s0
 genfscon proc /wakelocks                                                         u:object_r:proc_wakelocks:s0
 
 # Sysfs files used by surfaceflinger
