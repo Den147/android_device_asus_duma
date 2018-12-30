@@ -75,9 +75,6 @@ debug.egl.hw=0
 debug.sf.hw=0 
 persist.sys.ui.hw=false
 
-# Vendor Security patch level
-ro.lineage.build.vendor_security_patch=2016-08-05
-
 # Preferred network type - LTE, WCDMA, GSM
 ro.telephony.default_network=9
 ro.telephony.get_imsi_from_sim=true
