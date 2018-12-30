@@ -337,12 +337,6 @@ PRODUCT_COPY_FILES += \
     device/asus/duma/wifi/WCNSS_qcom_wlan_nv_duma.bin:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_wlan_nv_deb.bin \
     device/asus/duma/wifi/p2p_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/p2p_supplicant_overlay.conf \
     device/asus/duma/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf
-
-#WiFi Display
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.debug.wfd.enable=1 \
-    persist.sys.wfd.virtual=0 \
-    wlan.wfd.hdcp=disable
 	
 #Fix native libraries error messages in Amazon Prime Video and Firefox
 PRODUCT_PROPERTY_OVERRIDES += \
