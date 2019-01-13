@@ -67,10 +67,14 @@ dalvik.vm.dex2oat-swap=false
 # Graphics
 ro.opengles.version=196608
 debug.composition.type=gpu
+persist.sys.use_16bpp_alpha=1
+hwui.enable_vsync=true
+hwui.disable_vsync=false
+hw3d.force=1
 
 # Display
 debug.hwc.force_gpu=1 
-debug.hwc.max_hw_overlays=0 
+debug.hwc.max_hw_overlays=0
 debug.egl.hw=0 
 debug.sf.hw=0 
 persist.sys.ui.hw=false
@@ -88,11 +92,89 @@ persist.radio.apm_sim_not_pwdn=1
 persist.radio.use_cc_names=true
 
 # Qualcomm BT aptXHD
+persist.bt.enableAptX=true
 persist.bt.enableAptXHD=true
 
 # Baseband version
 gsm.version.baseband=J00_0.35.0_1002
 
 # Power consumption
+persist.sys.shutdown.mode=hibernate
+ro.config.hw_quickpoweron=true
+persist.radio.add_power_save=1
+persist.hvdcp.allow_opti=1
+ro.sys.fw.dex2oat_thread_count=2
 pm.sleep_mode=1
+wifi.supplicant_scan_interval=300
+persist.radio.add_power_save=1
+power_supply.wakeup=enable
+profiler.force_disable_ulog=true
+profiler.force_disable_err_rpt=true
+profiler.force_disable_err_rpt=1
+profiler.force_disable_ulog=1
+ro.ril.disable.power.collapse=0
+ro.ril.power_collapse=1
+dalvik.vm.dexopt-flags=m=v,o=y
+persist.sys.purgeable_assets=1
+ro.bluetooth.wipower=true
+perstist.power.usetwilightadj=true
 
+#Overall performance tweaks
+
+ro.HOME_APP_ADJ=1
+media.stagefright.enable-http=true
+media.stagefright.enable-player=true
+media.stagefright.enable-meta=true
+media.stagefright.enable-aac=true
+media.stagefright.enable-qcp=true
+media.stagefright.enable-scan=true
+media.stagefright.enable-record=true
+debug.composition.type=mdp
+
+#NET and DNS Tweaks
+
+ro.ril.enable.dtm=1
+net.rmnet0.dns1=8.8.8.8
+net.rmnet0.dns2=8.8.4.4
+net.dns1=8.8.8.8
+net.dns2=8.8.4.4
+net.tcp.buffersize.default=4096,87380,256960,4096, 16384,256960
+net.tcp.buffersize.wifi=4096,87380,256960,4096,163 84,256960
+net.tcp.buffersize.lte=524288,1048576,2097152,5242 88,1048576,2097152
+net.tcp.buffersize.hsdpa=6144,87380,1048576,6144,8 7380,1048576
+net.tcp.buffersize.hspa=6144,87380,524288,6144,163 84,262144
+net.tcp.buffersize.umts=4096,87380,256960,4096,163 84,256960
+net.tcp.buffersize.edge=4096,87380,256960,4096,163 84,256960
+net.tcp.buffersize.gprs=4096,87380,256960,4096,163 84,256960
+net.tcp.buffersize.evdo_b=6144,87380,1048576,6144, 87380,1048576
+net.ipv4.tcp_ecn=0
+net.ipv4.route.flush=1
+net.ipv4.tcp_rfc1337=1
+net.ipv4.ip_no_pmtu_disc=0
+net.ipv4.tcp_sack=1
+net.ipv4.tcp_fack=1
+net.ipv4.tcp_window_scaling=1
+net.ipv4.tcp_timestamps=1
+net.ipv4.tcp_rmem=4096 39000 187000
+net.ipv4.tcp_wmem=4096 39000 187000
+net.ipv4.tcp_mem=187000 187000 187000
+net.ipv4.tcp_no_metrics_save=1
+net.ipv4.tcp_moderate_rcvbuf=1
+net.ipv6.tcp_ecn=0
+net.ipv6.route.flush=1
+net.ipv6.tcp_rfc1337=1
+net.ipv6.ip_no_pmtu_disc=0
+net.ipv6.tcp_sack=1
+net.ipv6.tcp_fack=1
+net.ipv6.tcp_window_scaling=1
+net.ipv6.tcp_timestamps=1
+net.ipv6.tcp_rmem=4096 39000 187000
+net.ipv6.tcp_wmem=4096 39000 187000
+net.ipv6.tcp_mem=187000 187000 187000
+net.ipv6.tcp_no_metrics_save=1
+net.ipv6.tcp_moderate_rcvbuf=1
+net.tethering.noprovisioning=true
+
+#Scroll
+
+persist.sys.scrollingcache=1
