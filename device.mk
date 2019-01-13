@@ -32,10 +32,6 @@ PRODUCT_AAPT_PREF_CONFIG := xhdpi
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240
 
-# Debugging
-PRODUCT_PACKAGES += \
-	MatLog
-
 # A list of dpis to select prebuilt apk, in precedence order.
 PRODUCT_AAPT_PREBUILT_DPI := hdpi
 
