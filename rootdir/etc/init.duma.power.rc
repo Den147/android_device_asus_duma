@@ -80,6 +80,8 @@ on charger
     write /sys/devices/system/cpu/cpu2/online 0
     write /sys/devices/system/cpu/cpu3/online 0
 
+	start charger
+
 on property:init.svc.recovery=running
     trigger enable-low-power
 
