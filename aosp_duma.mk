@@ -38,8 +38,8 @@ PRODUCT_MANUFACTURER := Asus
 PRODUCT_GMS_CLIENTID_BASE := android-asus
 
 
-PRODUCT_BUILD_PROP_OVERRIDES += \
-    PRIVATE_BUILD_DESC="WW_epad-user 4.2.2 JDQ39 WW_epad-10.10.3.39-20131220 release-keys"
+#PRODUCT_BUILD_PROP_OVERRIDES += \
+#    PRIVATE_BUILD_DESC="WW_epad-user 4.2.2 JDQ39 WW_epad-10.10.3.39-20131220 release-keys"
 
-BUILD_FINGERPRINT := "asus/WW_epad/EeePad:4.2.2/JDQ39/WW_epad-10.10.3.39-20131220:user/release-keys"
+#BUILD_FINGERPRINT := "asus/WW_epad/EeePad:4.2.2/JDQ39/WW_epad-10.10.3.39-20131220:user/release-keys"
 
