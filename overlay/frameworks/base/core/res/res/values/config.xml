@@ -327,7 +327,7 @@
     <integer name="config_screenBrightnessDoze">17</integer>
 
         <!-- Whether device supports double tap to wake -->
-    <bool name="config_supportDoubleTapWake">true</bool>
+    <!--bool name="config_supportDoubleTapWake">true</bool-->
 
     <!-- The list absolute paths of jar/apk files containing the device specific handlers,
          delimited by File.pathSeparator, which defaults to ":" on Android 
