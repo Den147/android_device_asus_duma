@@ -26,6 +26,10 @@ DEVICE_PACKAGE_OVERLAYS += \
 PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
 
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/rootdir/etc/fstab.duma:$(TARGET_COPY_OUT_RAMDISK)/fstab.duma \
+    $(LOCAL_PATH)/rootdir/etc/fstab.duma:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.duma
+
 # Screen density
 PRODUCT_AAPT_CONFIG := normal
 PRODUCT_AAPT_PREF_CONFIG := xhdpi
