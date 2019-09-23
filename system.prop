@@ -98,3 +98,6 @@ persist.bt.enableAptXHD=true
 # Baseband version
 gsm.version.baseband=J00_0.35.0_1002
 
+# Disable RescueParty (TEMP)
+persist.sys.disable_rescue=true
+
