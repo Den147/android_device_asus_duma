@@ -149,6 +149,9 @@
 /persist/widevine(/.*)?           u:object_r:persist_drm_file:s0
 /persist/wifi(/.*)?               u:object_r:persist_wifi_file:s0
 
+# firmware
+/firmware(/.*)?                   u:object_r:firmware_file:s0
+
 # Sysfs entry for RmNet function driver
 /sys/module/rmnet_usb/parameters/rmnet_data_init -- u:object_r:sysfs_rmnet:s0
 
