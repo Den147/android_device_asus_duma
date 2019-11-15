@@ -41,7 +41,7 @@ BOARD_KERNEL_CMDLINE += vmalloc=340M androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/asus/Sweet_kernel
 TARGET_KERNEL_CONFIG := sweet_defconfig
-#KERNEL_TOOLCHAIN := /home/neko/SaberNaro-arm-eabi-4.9-master/bin
+#KERNEL_TOOLCHAIN := /home/den147/gcc-linaro-4.9.4-2017.01-x86_64_arm-eabi/bin
 #KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
 
 # QCOM Hardware
@@ -142,8 +142,9 @@ ifeq ($(HOST_OS),linux)
   endif
 endif
 
-# Native suppor NTFS & SDFAT/EXFAT Filesystems
-TARGET_EXFAT_DRIVER := sdfat
+# Native suppor NTFS & EXFAT Filesystems
+TARGET_USES_EXFAT := true
+KERNEL_EXFAT_MODULE_NAME := "exfat"
 TARGET_USES_NTFS := true
 KERNEL_NTFS_MODULE_NAME := "ntfs"
 
