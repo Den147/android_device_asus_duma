@@ -175,6 +175,7 @@ USE_DEVICE_SPECIFIC_CAMERA:= true
 HAVE_ADRENO_SOURCE:= false
 
 # SELinux
+SELINUX_IGNORE_NEVERALLOWS := true
 BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy
 #include device/qcom/sepolicy/sepolicy.mk
 
