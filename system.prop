@@ -81,6 +81,7 @@ debug.hwc.force_gpu=0
 debug.egl.hw=1 
 debug.sf.hw=1
 persist.sys.ui.hw=true
+debug.sf.enable_gl_backpressure=1
 
 # Preferred network type - LTE, WCDMA, GSM
 ro.telephony.default_network=9
