@@ -15,3 +15,8 @@
 
 PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/aosp_duma.mk 
+
+COMMON_LUNCH_CHOICES := \
+    aosp_duma-user \
+    aosp_duma-userdebug \
+    aosp_duma-eng
