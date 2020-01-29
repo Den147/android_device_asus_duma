@@ -201,5 +201,7 @@ TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 DEVICE_MANIFEST_FILE := device/asus/duma/manifest.xml
 DEVICE_MATRIX_FILE := device/asus/duma/compatibility_matrix.xml
 
+BOARD_ROOT_EXTRA_SYMLINKS := /mnt/vendor/persist:/persist
+
 # Inherit from the proprietary version
 -include vendor/asus/duma/BoardConfigVendor.mk
